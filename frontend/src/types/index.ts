@@ -73,3 +73,27 @@ export interface SearchResponse {
   total_results: number;
   results: SearchResult[];
 }
+
+export interface TranscriptSegment {
+  id: string;
+  video_id: string;
+  start_time: number;
+  end_time: number;
+  text: string;
+  language?: string | null;
+  embedding_model?: string | null;
+  index_reference?: number | null;
+  created_at: string;
+}
+
+export interface TranscriptResponse {
+  video_id: string;
+  language?: string | null;
+  total_segments: number;
+  segments: TranscriptSegment[];
+}
+
+export interface SegmentListResponse {
+  total: number;
+  items: TranscriptSegment[];
+}

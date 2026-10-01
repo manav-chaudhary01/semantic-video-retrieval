@@ -5,6 +5,11 @@ from backend.app.schemas.video import (
     VideoListResponse,
     JobStatusResponse,
 )
+from backend.app.schemas.transcript import (
+    TranscriptSegmentResponse,
+    TranscriptResponse,
+    SegmentListResponse,
+)
 
 __all__ = [
     "HealthResponse",
@@ -12,4 +17,7 @@ __all__ = [
     "VideoResponse",
     "VideoListResponse",
     "JobStatusResponse",
+    "TranscriptSegmentResponse",
+    "TranscriptResponse",
+    "SegmentListResponse",
 ]

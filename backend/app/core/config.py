@@ -42,11 +42,20 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE_MB: int = 500
     ALLOWED_EXTENSIONS: List[str] = [".mp4", ".mkv", ".mov", ".avi", ".webm"]
 
-    # Model Defaults (configured for later phases)
+    # Model Defaults
     WHISPER_MODEL: str = "base"
     WHISPER_DEVICE: str = "auto"
     TEXT_EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
+    TEXT_EMBEDDING_DIM: int = 384
     VISION_MODEL: str = "ViT-B-32"
+    VISION_EMBEDDING_DIM: int = 512
+
+    # Chunking & Indexing Configuration
+    CHUNK_TARGET_DURATION_SEC: float = 20.0
+    CHUNK_MAX_WORDS: int = 60
+    CHUNK_MAX_PAUSE_SEC: float = 2.0
+    TEXT_INDEX_FILE: Path = Field(default=Path("data/indexes/text_faiss.index"))
+    TEXT_ID_MAP_FILE: Path = Field(default=Path("data/indexes/text_id_map.json"))
 
     def get_absolute_path(self, path: Path) -> Path:
         """Resolve a storage path relative to workspace BASE_DIR if not absolute."""

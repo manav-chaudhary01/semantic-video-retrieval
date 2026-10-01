@@ -19,7 +19,7 @@ Status Legend:
 | **Phase 0** | Requirements, Architecture, and Planning | `VERIFIED` | 2026-10-21 |
 | **Phase 1** | Project Scaffolding and Application Foundation | `VERIFIED` | 2026-10-21 |
 | **Phase 2** | Video Upload, Validation, and Preprocessing | `VERIFIED` | 2026-10-21 |
-| **Phase 3** | Timestamped Transcription and Text Indexing | `NOT_STARTED` | - |
+| **Phase 3** | Timestamped Transcription and Text Indexing | `VERIFIED` | 2026-10-21 |
 | **Phase 4** | Semantic Search MVP and Frontend Integration | `NOT_STARTED` | - |
 | **Phase 5** | Visual Content Retrieval | `NOT_STARTED` | - |
 | **Phase 6** | Multimodal Fusion and Temporal Context | `NOT_STARTED` | - |
@@ -62,13 +62,14 @@ Status Legend:
 - [x] Build frontend video upload page with live job progress and video playback preview (`VERIFIED`)
 
 ### Phase 3: Timestamped Transcription and Text Indexing
-- [ ] Integrate Faster-Whisper ASR with configurable model size and compute type (`NOT_STARTED`)
-- [ ] Transcribe audio and extract accurate segment and word timestamps (`NOT_STARTED`)
-- [ ] Implement transcript segmentation and chunking strategy (`NOT_STARTED`)
-- [ ] Integrate Sentence-Transformers (`all-MiniLM-L6-v2`) text embedder (`NOT_STARTED`)
-- [ ] Build FAISS text vector index (`IndexFlatIP`) with normalized embeddings (`NOT_STARTED`)
-- [ ] Synchronize and persist FAISS vector IDs to SQLite segment IDs (`NOT_STARTED`)
-- [ ] Add endpoints `GET /api/videos/{id}/transcript` and `GET /api/videos/{id}/segments` (`NOT_STARTED`)
+- [x] Integrate Faster-Whisper ASR with configurable model size and compute type (`VERIFIED`)
+- [x] Transcribe audio and extract accurate segment and word timestamps (`VERIFIED`)
+- [x] Implement transcript segmentation and chunking strategy (`VERIFIED`)
+- [x] Integrate Sentence-Transformers (`all-MiniLM-L6-v2`) text embedder (`VERIFIED`)
+- [x] Build FAISS text vector index (`IndexFlatIP`) with normalized embeddings (`VERIFIED`)
+- [x] Synchronize and persist FAISS vector IDs to SQLite segment IDs (`VERIFIED`)
+- [x] Add endpoints `GET /api/videos/{id}/transcript` and `GET /api/videos/{id}/segments` (`VERIFIED`)
+- [x] Build interactive transcript and segment viewer in frontend video player modal (`VERIFIED`)
 
 ### Phase 4: Semantic Search MVP and Frontend Integration
 - [ ] Implement `POST /api/search` with natural-language text embedding and FAISS query (`NOT_STARTED`)

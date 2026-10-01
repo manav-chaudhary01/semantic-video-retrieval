@@ -4,6 +4,8 @@ import type {
   VideoUploadResponse,
   ProcessingJobStatus,
   SearchResponse,
+  TranscriptResponse,
+  SegmentListResponse,
 } from '../types';
 
 const API_BASE = '/api';
@@ -97,6 +99,15 @@ export const api = {
 
   getVideoStreamUrl(id: string): string {
     return `${API_BASE}/videos/${id}/stream`;
+  },
+
+  // Transcripts & Segments (Phase 3)
+  async getTranscript(videoId: string): Promise<TranscriptResponse> {
+    return request<TranscriptResponse>(`/videos/${videoId}/transcript`);
+  },
+
+  async getSegments(videoId: string, skip: number = 0, limit: number = 50): Promise<SegmentListResponse> {
+    return request<SegmentListResponse>(`/videos/${videoId}/segments?skip=${skip}&limit=${limit}`);
   },
 
   // Search
