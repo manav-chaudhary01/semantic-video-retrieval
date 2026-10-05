@@ -110,11 +110,25 @@ export const api = {
     return request<SegmentListResponse>(`/videos/${videoId}/segments?skip=${skip}&limit=${limit}`);
   },
 
-  // Search
-  async search(query: string, modality: string = 'text', topK: number = 5): Promise<SearchResponse> {
+  // Search (Phase 4 Semantic Retrieval)
+  async search(
+    query: string,
+    modality: string = 'text',
+    topK: number = 5,
+    videoId?: string,
+    threshold?: number
+  ): Promise<SearchResponse> {
+    const payload: Record<string, unknown> = {
+      query,
+      modality,
+      top_k: topK,
+    };
+    if (videoId) payload.video_id = videoId;
+    if (threshold !== undefined) payload.threshold = threshold;
+
     return request<SearchResponse>('/search', {
       method: 'POST',
-      body: JSON.stringify({ query, modality, top_k: topK }),
+      body: JSON.stringify(payload),
     });
   },
 };

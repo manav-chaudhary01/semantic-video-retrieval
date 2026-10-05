@@ -35,6 +35,14 @@ async def lifespan(app: FastAPI):
     
     # Initialize database tables
     init_db()
+
+    # Pre-warm text embedding model for instant search response
+    try:
+        from backend.app.ml.text_embeddings import text_embedder
+        text_embedder.embed_texts(["warmup query"])
+        logger.info("Text embedding model warmed up successfully.")
+    except Exception as e:
+        logger.warning(f"Embedding warmup skipped: {e}")
     
     yield
     
