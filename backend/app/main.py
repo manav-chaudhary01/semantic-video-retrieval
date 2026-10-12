@@ -28,6 +28,7 @@ async def lifespan(app: FastAPI):
         settings.DATA_DIR,
         settings.VIDEOS_DIR,
         settings.AUDIO_DIR,
+        settings.FRAMES_DIR,
         settings.INDEXES_DIR,
         settings.TEMP_DIR,
     ]:
@@ -37,14 +38,21 @@ async def lifespan(app: FastAPI):
     # Initialize database tables
     init_db()
 
-    # Pre-warm text embedding model in a background thread to prevent blocking Uvicorn socket binding
+    # Pre-warm embedding models in a background thread to prevent blocking Uvicorn socket binding
     def _warmup_worker():
         try:
             from backend.app.ml.text_embeddings import text_embedder
             text_embedder.embed_texts(["warmup query"])
             logger.info("Text embedding model warmed up successfully in background.")
         except Exception as e:
-            logger.warning(f"Embedding warmup skipped: {e}")
+            logger.warning(f"Text embedding warmup skipped: {e}")
+
+        try:
+            from backend.app.ml.visual_embeddings import visual_embedder
+            visual_embedder.embed_text("warmup visual query")
+            logger.info("Visual CLIP model warmed up successfully in background.")
+        except Exception as e:
+            logger.warning(f"Visual embedding warmup skipped: {e}")
 
     threading.Thread(target=_warmup_worker, daemon=True).start()
     

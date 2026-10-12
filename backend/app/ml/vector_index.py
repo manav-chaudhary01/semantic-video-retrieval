@@ -75,12 +75,12 @@ class FaissTextIndex(BaseVectorStore):
                         raw_map = json.load(f)
                         self._id_map = {int(k): v for k, v in raw_map.items()}
                         self._reverse_map = {v: int(k) for k, v in raw_map.items()}
-                    logger.info(f"Loaded FAISS text index with {self._index.ntotal} vectors.")
+                    logger.info(f"Loaded FAISS index with {self._index.ntotal} vectors from {self.index_file.name}.")
                     return
                 except Exception as e:
-                    logger.warning(f"Failed to load existing index: {e}. Reinitializing a fresh index.")
+                    logger.warning(f"Failed to load existing index from {self.index_file.name}: {e}. Reinitializing fresh index.")
 
-            logger.info(f"Initializing fresh FAISS IndexFlatIP(dim={self.dimension})")
+            logger.info(f"Initializing fresh FAISS IndexFlatIP(dim={self.dimension}) for {self.index_file.name}")
             self._index = faiss.IndexFlatIP(self.dimension)
             self._id_map = {}
             self._reverse_map = {}
@@ -99,14 +99,18 @@ class FaissTextIndex(BaseVectorStore):
         if vectors.ndim == 1:
             vectors = np.expand_dims(vectors, axis=0)
 
-        # Ensure float32 dtype
-        vectors = vectors.astype(np.float32)
+        assert vectors.shape[0] == len(entity_ids), (
+            f"Vectors count ({vectors.shape[0]}) does not match entity count ({len(entity_ids)})"
+        )
+        assert vectors.shape[1] == self.dimension, (
+            f"Vector dimension ({vectors.shape[1]}) does not match index dimension ({self.dimension})"
+        )
 
-        # L2-normalize vectors so Inner Product == Cosine Similarity
+        vectors = vectors.astype(np.float32)
+        # Ensure L2-normalized
         faiss.normalize_L2(vectors)
 
         assigned_indices: List[int] = []
-
         with self._lock:
             start_idx = self._index.ntotal
             self._index.add(vectors)
@@ -117,6 +121,9 @@ class FaissTextIndex(BaseVectorStore):
                 self._reverse_map[entity_id] = idx
                 assigned_indices.append(idx)
 
+            logger.info(
+                f"Added {len(entity_ids)} vectors to {self.index_file.name}. Total now: {self._index.ntotal}"
+            )
             self.save()
 
         return assigned_indices
@@ -167,4 +174,18 @@ class FaissTextIndex(BaseVectorStore):
         self._initialize()
 
 
-text_vector_index = FaissTextIndex()
+FaissVectorIndex = FaissTextIndex
+
+# Persistent Text Index (384-d MiniLM)
+text_vector_index = FaissVectorIndex(
+    dimension=settings.TEXT_EMBEDDING_DIM,
+    index_file=settings.TEXT_INDEX_FILE,
+    id_map_file=settings.TEXT_ID_MAP_FILE,
+)
+
+# Persistent Visual Index (512-d CLIP)
+visual_vector_index = FaissVectorIndex(
+    dimension=settings.VISION_EMBEDDING_DIM,
+    index_file=settings.VISUAL_INDEX_FILE,
+    id_map_file=settings.VISUAL_ID_MAP_FILE,
+)

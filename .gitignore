@@ -41,6 +41,8 @@ data/audio/*
 !data/audio/.gitkeep
 data/indexes/*
 !data/indexes/.gitkeep
+data/frames/*
+!data/frames/.gitkeep
 data/temp/*
 !data/temp/.gitkeep
 *.sqlite

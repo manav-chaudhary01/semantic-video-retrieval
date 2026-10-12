@@ -15,6 +15,10 @@ from backend.app.schemas.search import (
     SearchResultItem,
     SearchResponse,
 )
+from backend.app.schemas.frame import (
+    VisualFrameResponse,
+    VisualFrameListResponse,
+)
 
 __all__ = [
     "HealthResponse",
@@ -28,4 +32,6 @@ __all__ = [
     "SearchRequest",
     "SearchResultItem",
     "SearchResponse",
+    "VisualFrameResponse",
+    "VisualFrameListResponse",
 ]

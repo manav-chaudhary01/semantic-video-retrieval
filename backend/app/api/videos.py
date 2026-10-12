@@ -98,7 +98,7 @@ async def upload_video(
     db.refresh(new_video)
 
     # Dispatch asynchronous background worker
-    job_service.submit_job(video_id, job_id)
+    job_service.submit_job(video_id, job_id, absolute_storage_path)
 
     logger.info(f"Accepted video upload: id={video_id}, name='{filename}', size={total_written} bytes")
 

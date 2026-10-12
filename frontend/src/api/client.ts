@@ -6,6 +6,7 @@ import type {
   SearchResponse,
   TranscriptResponse,
   SegmentListResponse,
+  VisualFrameListResponse,
 } from '../types';
 
 const API_BASE = '/api';
@@ -58,8 +59,10 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
 
     return (await res.json()) as T;
   } catch (err: unknown) {
-    if (err instanceof ApiError) throw err;
-    throw new ApiError(0, err instanceof Error ? err.message : 'Network connection failed');
+    if (err instanceof ApiError) {
+      throw err;
+    }
+    throw new ApiError(0, err instanceof Error ? err.message : 'Unknown network failure');
   }
 }
 
@@ -70,8 +73,8 @@ export const api = {
   },
 
   // Videos
-  async getVideos(skip: number = 0, limit: number = 50): Promise<{ total: number; items: Video[] }> {
-    return request<{ total: number; items: Video[] }>(`/videos?skip=${skip}&limit=${limit}`);
+  async getVideos(): Promise<{ total: number; items: Video[] }> {
+    return request<{ total: number; items: Video[] }>('/videos');
   },
 
   async getVideo(id: string): Promise<Video> {
@@ -85,6 +88,7 @@ export const api = {
   async uploadVideo(file: File): Promise<VideoUploadResponse> {
     const formData = new FormData();
     formData.append('file', file);
+
     return request<VideoUploadResponse>('/videos', {
       method: 'POST',
       body: formData,
@@ -110,7 +114,16 @@ export const api = {
     return request<SegmentListResponse>(`/videos/${videoId}/segments?skip=${skip}&limit=${limit}`);
   },
 
-  // Search (Phase 4 Semantic Retrieval)
+  // Visual Frames (Phase 5)
+  async getVideoFrames(videoId: string): Promise<VisualFrameListResponse> {
+    return request<VisualFrameListResponse>(`/videos/${videoId}/frames`);
+  },
+
+  getFrameImageUrl(videoId: string, frameId: string): string {
+    return `${API_BASE}/videos/${videoId}/frames/${frameId}`;
+  },
+
+  // Search (Phase 4 Semantic Retrieval & Phase 5 Visual Retrieval)
   async search(
     query: string,
     modality: string = 'text',
