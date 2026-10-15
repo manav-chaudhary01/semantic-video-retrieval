@@ -22,7 +22,7 @@ Status Legend:
 | **Phase 3** | Timestamped Transcription and Text Indexing | `VERIFIED` | 2026-10-21 |
 | **Phase 4** | Semantic Search MVP and Frontend Integration | `VERIFIED` | 2026-10-21 |
 | **Phase 5** | Visual Content Retrieval | `VERIFIED` | 2026-10-22 |
-| **Phase 6** | Multimodal Fusion and Temporal Context | `NOT_STARTED` | - |
+| **Phase 6** | Multimodal Fusion and Temporal Context | `VERIFIED` | 2026-10-22 |
 | **Phase 7** | Evaluation, Benchmarking, and Optimization | `NOT_STARTED` | - |
 | **Phase 8** | Reliability, Security, Documentation, and Final Demo | `NOT_STARTED` | - |
 | **Phase 9** | Optional Advanced Features | `NOT_STARTED` | - |
@@ -88,10 +88,12 @@ Status Legend:
 - [x] Add frame preview thumbnails in search results with synchronized seeking to original video timeline (`VERIFIED`)
 
 ### Phase 6: Multimodal Fusion and Temporal Context
-- [ ] Implement score calibration and multimodal score fusion ($\alpha \cdot \text{text} + \beta \cdot \text{visual}$) (`NOT_STARTED`)
-- [ ] Implement temporal consolidation (merging nearby timestamps and deduplication) (`NOT_STARTED`)
-- [ ] Add search modality selector (text-only, visual-only, multimodal) (`NOT_STARTED`)
-- [ ] Implement `POST /api/search/multimodal` (`NOT_STARTED`)
+- [x] Implement score calibration and multimodal score fusion ($\alpha \cdot \text{text} + \beta \cdot \text{visual}$) (`VERIFIED`)
+- [x] Implement temporal context consolidation (window pairing, peak keyframe tracking) (`VERIFIED`)
+- [x] Implement consecutive frame deduplication and clustering (`VERIFIED`)
+- [x] Support Reciprocal Rank Fusion (RRF) and Calibrated Linear scoring algorithms (`VERIFIED`)
+- [x] Add full multimodal search modality selector and fusion controls in UI (`VERIFIED`)
+- [x] Implement dedicated endpoint `POST /api/search/multimodal` and `modality="multimodal"` (`VERIFIED`)
 
 ### Phase 7: Evaluation, Benchmarking, and Optimization
 - [ ] Create evaluation dataset with ground-truth intervals and diverse queries (`NOT_STARTED`)

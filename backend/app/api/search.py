@@ -13,5 +13,15 @@ def search_videos(
     request: SearchRequest,
     db: Session = Depends(get_db),
 ) -> SearchResponse:
-    """Executes semantic search against indexed video speech segments using dense vector embeddings."""
+    """Executes semantic search against indexed video speech segments or frames."""
+    return search_service.search(db, request)
+
+
+@router.post("/multimodal", response_model=SearchResponse, summary="Multimodal Fused Search")
+def search_multimodal(
+    request: SearchRequest,
+    db: Session = Depends(get_db),
+) -> SearchResponse:
+    """Executes fused cross-modal retrieval combining spoken dialogue and visual scene frames."""
+    request.modality = "multimodal"
     return search_service.search(db, request)

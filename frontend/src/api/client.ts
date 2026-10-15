@@ -123,13 +123,19 @@ export const api = {
     return `${API_BASE}/videos/${videoId}/frames/${frameId}`;
   },
 
-  // Search (Phase 4 Semantic Retrieval & Phase 5 Visual Retrieval)
+  // Search (Phase 4 Text, Phase 5 Visual, Phase 6 Multimodal)
   async search(
     query: string,
     modality: string = 'text',
     topK: number = 5,
     videoId?: string,
-    threshold?: number
+    threshold?: number,
+    options?: {
+      alpha?: number;
+      beta?: number;
+      fusionMethod?: 'linear' | 'rrf';
+      temporalWindowSec?: number;
+    }
   ): Promise<SearchResponse> {
     const payload: Record<string, unknown> = {
       query,
@@ -138,6 +144,10 @@ export const api = {
     };
     if (videoId) payload.video_id = videoId;
     if (threshold !== undefined) payload.threshold = threshold;
+    if (options?.alpha !== undefined) payload.alpha = options.alpha;
+    if (options?.beta !== undefined) payload.beta = options.beta;
+    if (options?.fusionMethod !== undefined) payload.fusion_method = options.fusionMethod;
+    if (options?.temporalWindowSec !== undefined) payload.temporal_window_sec = options.temporalWindowSec;
 
     return request<SearchResponse>('/search', {
       method: 'POST',

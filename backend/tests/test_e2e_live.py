@@ -189,3 +189,47 @@ def test_e2e_live_transcription_and_indexing_pipeline():
         f"[E2E] Visual Search: Top visual match score={top_visual['score']:.4f} "
         f"at timestamp {top_visual['start_time']}s (latency={visual_search_data['latency_ms']}ms)"
     )
+
+    # 12. Check Multimodal Fusion Search (Phase 6 Cross-Modal & Temporal Context)
+    mm_res = client.post(
+        "/api/search",
+        json={
+            "query": "neural networks and gradient descent optimization with test pattern",
+            "modality": "multimodal",
+            "video_id": video_id,
+            "alpha": 0.6,
+            "beta": 0.4,
+            "fusion_method": "linear",
+            "temporal_window_sec": 10.0,
+            "top_k": 3,
+        },
+    )
+    assert mm_res.status_code == 200, f"Multimodal search failed: {mm_res.text}"
+    mm_data = mm_res.json()
+    assert mm_data["modality"] == "multimodal"
+    assert mm_data["total_results"] >= 1
+    top_mm = mm_data["results"][0]
+    assert top_mm["start_time"] >= 0.0
+    assert top_mm["end_time"] > top_mm["start_time"]
+    print(
+        f"[E2E] Multimodal Fusion: Top moment [{top_mm['start_time']}s - {top_mm['end_time']}s] "
+        f"modality={top_mm['modality']} score={top_mm['score']:.4f} "
+        f"(speech_score={top_mm.get('text_score')}, visual_score={top_mm.get('visual_score')})"
+    )
+
+    # Verify dedicated /api/search/multimodal alias
+    alias_res = client.post(
+        "/api/search/multimodal",
+        json={
+            "query": "deep learning lecture neural networks",
+            "video_id": video_id,
+            "alpha": 0.5,
+            "beta": 0.5,
+            "fusion_method": "rrf",
+            "top_k": 2,
+        },
+    )
+    assert alias_res.status_code == 200
+    assert alias_res.json()["modality"] == "multimodal"
+    assert alias_res.json()["total_results"] >= 1
+    print("[E2E] Multimodal Alias: Confirmed /api/search/multimodal endpoint.")
