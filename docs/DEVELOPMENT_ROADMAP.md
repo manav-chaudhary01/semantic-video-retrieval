@@ -96,10 +96,10 @@ Status Legend:
 - [x] Implement dedicated endpoint `POST /api/search/multimodal` and `modality="multimodal"` (`VERIFIED`)
 
 ### Phase 7: Evaluation, Benchmarking, and Optimization
-- [ ] Create evaluation dataset with ground-truth intervals and diverse queries (`NOT_STARTED`)
-- [ ] Implement evaluation metrics (Recall@K, Precision@K, MRR, latency) (`NOT_STARTED`)
-- [ ] Run ablation studies (text vs visual vs multimodal, chunking strategies) (`NOT_STARTED`)
-- [ ] Optimize batching and caching; generate formal evaluation report (`NOT_STARTED`)
+- [x] Create version-controlled evaluation dataset with ground-truth intervals and diverse queries (`VERIFIED`)
+- [x] Implement evaluation metrics (Recall@K, Precision@K, MRR, latency, tIoU, interval matching) (`VERIFIED`)
+- [x] Run ablation studies (text vs visual vs multimodal linear vs multimodal RRF) (`VERIFIED`)
+- [x] Profile computational bottlenecks and generate formal evaluation report in `docs/EVALUATION_REPORT.md` (`VERIFIED`)
 
 ### Phase 8: Reliability, Security, Documentation, and Final Demo
 - [ ] Input validation, error handling, rate limiting, and safe media streaming (`NOT_STARTED`)

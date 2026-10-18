@@ -1,0 +1,256 @@
+{
+  "version": "1.0.0",
+  "dataset_name": "Semantic Video Retrieval Benchmark (Exploratory)",
+  "description": "Standardized benchmark dataset with 15 queries (4 dialogue-only, 4 visual-only, 4 multimodal, and 3 unanswerable) across a controlled 3-video corpus.",
+  "created_at": "2026-10-22",
+  "corpus_video_ids": [
+    "ab66231a-f53f-4728-a31d-186a861e2cad",
+    "cc886415-5595-4f4e-b912-a2a23ae5cf3d",
+    "5136a295-1019-4162-9db8-3fca3fb2f688"
+  ],
+  "queries": [
+    {
+      "query_id": "Q01",
+      "query": "What does the speaker say about gradient descent optimization?",
+      "query_type": "dialogue_only",
+      "expected_relevant_video_ids": [
+        "ab66231a-f53f-4728-a31d-186a861e2cad"
+      ],
+      "ground_truth_intervals": [
+        {
+          "video_id": "ab66231a-f53f-4728-a31d-186a861e2cad",
+          "start_time": 5.0,
+          "end_time": 10.0,
+          "description": "Speaker discusses gradient descent optimization and loss minimization"
+        }
+      ],
+      "is_unanswerable": false,
+      "notes": "Requires matching speech transcript segment on optimization"
+    },
+    {
+      "query_id": "Q02",
+      "query": "How do solar panels and renewable green energy help?",
+      "query_type": "dialogue_only",
+      "expected_relevant_video_ids": [
+        "5136a295-1019-4162-9db8-3fca3fb2f688"
+      ],
+      "ground_truth_intervals": [
+        {
+          "video_id": "5136a295-1019-4162-9db8-3fca3fb2f688",
+          "start_time": 5.0,
+          "end_time": 10.0,
+          "description": "Speaker explains solar panels and renewable energy reducing carbon emissions"
+        }
+      ],
+      "is_unanswerable": false,
+      "notes": "Requires speech matching on solar panels and green energy"
+    },
+    {
+      "query_id": "Q03",
+      "query": "Where does the speaker introduce neural networks and deep learning?",
+      "query_type": "dialogue_only",
+      "expected_relevant_video_ids": [
+        "ab66231a-f53f-4728-a31d-186a861e2cad"
+      ],
+      "ground_truth_intervals": [
+        {
+          "video_id": "ab66231a-f53f-4728-a31d-186a861e2cad",
+          "start_time": 0.0,
+          "end_time": 5.0,
+          "description": "Lecture introduction covering deep learning and neural networks"
+        }
+      ],
+      "is_unanswerable": false,
+      "notes": "Introductory speech segment on deep learning foundations"
+    },
+    {
+      "query_id": "Q04",
+      "query": "Discussing global warming and rising sea levels",
+      "query_type": "dialogue_only",
+      "expected_relevant_video_ids": [
+        "5136a295-1019-4162-9db8-3fca3fb2f688"
+      ],
+      "ground_truth_intervals": [
+        {
+          "video_id": "5136a295-1019-4162-9db8-3fca3fb2f688",
+          "start_time": 0.0,
+          "end_time": 5.0,
+          "description": "Speaker discusses climate change and rising sea levels"
+        }
+      ],
+      "is_unanswerable": false,
+      "notes": "Speech segment discussing global warming impacts"
+    },
+    {
+      "query_id": "Q05",
+      "query": "A bright red car or red vehicle",
+      "query_type": "visual_only",
+      "expected_relevant_video_ids": [
+        "cc886415-5595-4f4e-b912-a2a23ae5cf3d"
+      ],
+      "ground_truth_intervals": [
+        {
+          "video_id": "cc886415-5595-4f4e-b912-a2a23ae5cf3d",
+          "start_time": 0.0,
+          "end_time": 5.0,
+          "description": "Red visual canvas scene corresponding to vehicle"
+        }
+      ],
+      "is_unanswerable": false,
+      "notes": "Visual retrieval matching bright red visual features"
+    },
+    {
+      "query_id": "Q06",
+      "query": "A person enters the room",
+      "query_type": "visual_only",
+      "expected_relevant_video_ids": [
+        "cc886415-5595-4f4e-b912-a2a23ae5cf3d"
+      ],
+      "ground_truth_intervals": [
+        {
+          "video_id": "cc886415-5595-4f4e-b912-a2a23ae5cf3d",
+          "start_time": 5.0,
+          "end_time": 10.0,
+          "description": "Amber room scene where person navigation occurs"
+        }
+      ],
+      "is_unanswerable": false,
+      "notes": "Visual retrieval of person entering room moment"
+    },
+    {
+      "query_id": "Q07",
+      "query": "Ocean water or blue sea level view",
+      "query_type": "visual_only",
+      "expected_relevant_video_ids": [
+        "5136a295-1019-4162-9db8-3fca3fb2f688"
+      ],
+      "ground_truth_intervals": [
+        {
+          "video_id": "5136a295-1019-4162-9db8-3fca3fb2f688",
+          "start_time": 0.0,
+          "end_time": 5.0,
+          "description": "Cyan / aqua canvas scene representing sea levels and water"
+        }
+      ],
+      "is_unanswerable": false,
+      "notes": "Visual retrieval of aqua ocean water scene"
+    },
+    {
+      "query_id": "Q08",
+      "query": "A green surface representing clean energy",
+      "query_type": "visual_only",
+      "expected_relevant_video_ids": [
+        "5136a295-1019-4162-9db8-3fca3fb2f688"
+      ],
+      "ground_truth_intervals": [
+        {
+          "video_id": "5136a295-1019-4162-9db8-3fca3fb2f688",
+          "start_time": 5.0,
+          "end_time": 10.0,
+          "description": "Emerald green canvas scene representing clean energy"
+        }
+      ],
+      "is_unanswerable": false,
+      "notes": "Visual retrieval of green environmental scene"
+    },
+    {
+      "query_id": "Q09",
+      "query": "Autonomous red car navigating city streets",
+      "query_type": "multimodal",
+      "expected_relevant_video_ids": [
+        "cc886415-5595-4f4e-b912-a2a23ae5cf3d"
+      ],
+      "ground_truth_intervals": [
+        {
+          "video_id": "cc886415-5595-4f4e-b912-a2a23ae5cf3d",
+          "start_time": 0.0,
+          "end_time": 5.0,
+          "description": "Co-occurring speech about autonomous car and red visual scene"
+        }
+      ],
+      "is_unanswerable": false,
+      "notes": "Joint speech and visual evidence of autonomous red vehicle"
+    },
+    {
+      "query_id": "Q10",
+      "query": "Neural networks lecture with blue presentation screen",
+      "query_type": "multimodal",
+      "expected_relevant_video_ids": [
+        "ab66231a-f53f-4728-a31d-186a861e2cad"
+      ],
+      "ground_truth_intervals": [
+        {
+          "video_id": "ab66231a-f53f-4728-a31d-186a861e2cad",
+          "start_time": 0.0,
+          "end_time": 5.0,
+          "description": "Deep learning speech aligned with blue presentation background"
+        }
+      ],
+      "is_unanswerable": false,
+      "notes": "Speech intro with blue slide presentation"
+    },
+    {
+      "query_id": "Q11",
+      "query": "Speaker explaining global warming with ocean water visual",
+      "query_type": "multimodal",
+      "expected_relevant_video_ids": [
+        "5136a295-1019-4162-9db8-3fca3fb2f688"
+      ],
+      "ground_truth_intervals": [
+        {
+          "video_id": "5136a295-1019-4162-9db8-3fca3fb2f688",
+          "start_time": 0.0,
+          "end_time": 5.0,
+          "description": "Climate change dialogue paired with cyan sea water scene"
+        }
+      ],
+      "is_unanswerable": false,
+      "notes": "Climate change speech aligned with ocean water visual"
+    },
+    {
+      "query_id": "Q12",
+      "query": "Pedestrian entering room during robotics discussion",
+      "query_type": "multimodal",
+      "expected_relevant_video_ids": [
+        "cc886415-5595-4f4e-b912-a2a23ae5cf3d"
+      ],
+      "ground_truth_intervals": [
+        {
+          "video_id": "cc886415-5595-4f4e-b912-a2a23ae5cf3d",
+          "start_time": 5.0,
+          "end_time": 10.0,
+          "description": "Room entry speech aligned with amber room scene"
+        }
+      ],
+      "is_unanswerable": false,
+      "notes": "Speech mentioning pedestrian combined with room visual scene"
+    },
+    {
+      "query_id": "Q13",
+      "query": "Quantum computing qubit entanglement and superconductivity",
+      "query_type": "unanswerable",
+      "expected_relevant_video_ids": [],
+      "ground_truth_intervals": [],
+      "is_unanswerable": true,
+      "notes": "Out of domain: no quantum physics concepts exist in corpus"
+    },
+    {
+      "query_id": "Q14",
+      "query": "Baking chocolate chip cookies in an oven recipe",
+      "query_type": "unanswerable",
+      "expected_relevant_video_ids": [],
+      "ground_truth_intervals": [],
+      "is_unanswerable": true,
+      "notes": "Out of domain: culinary content absent from corpus"
+    },
+    {
+      "query_id": "Q15",
+      "query": "Astronaut landing on Mars spacecraft launch",
+      "query_type": "unanswerable",
+      "expected_relevant_video_ids": [],
+      "ground_truth_intervals": [],
+      "is_unanswerable": true,
+      "notes": "Out of domain: space exploration absent from corpus"
+    }
+  ]
+}
