@@ -36,8 +36,17 @@ export interface Video {
   updated_at?: string;
 }
 
+export interface VideoUploadResponse {
+  video_id: string;
+  filename: string;
+  status: string;
+  message: string;
+  job_id: string;
+}
+
 export interface ProcessingJobStatus {
   video_id: string;
+  job_id: string;
   status: string;
   stage: JobStage;
   progress: number;

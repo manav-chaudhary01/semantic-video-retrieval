@@ -18,7 +18,7 @@ Status Legend:
 |---|---|---|---|
 | **Phase 0** | Requirements, Architecture, and Planning | `VERIFIED` | 2026-10-21 |
 | **Phase 1** | Project Scaffolding and Application Foundation | `VERIFIED` | 2026-10-21 |
-| **Phase 2** | Video Upload, Validation, and Preprocessing | `NOT_STARTED` | - |
+| **Phase 2** | Video Upload, Validation, and Preprocessing | `VERIFIED` | 2026-10-21 |
 | **Phase 3** | Timestamped Transcription and Text Indexing | `NOT_STARTED` | - |
 | **Phase 4** | Semantic Search MVP and Frontend Integration | `NOT_STARTED` | - |
 | **Phase 5** | Visual Content Retrieval | `NOT_STARTED` | - |
@@ -52,14 +52,14 @@ Status Legend:
 - [x] Verify full-stack connectivity (Frontend -> Backend health check) (`VERIFIED`)
 
 ### Phase 2: Video Upload, Validation, and Preprocessing
-- [ ] Implement `POST /api/videos` with multipart validation (`NOT_STARTED`)
-- [ ] Sanitize filenames and generate server-side UUID storage names (`NOT_STARTED`)
-- [ ] Integrate FFprobe for metadata extraction (duration, resolution, fps, streams) (`NOT_STARTED`)
-- [ ] Initialize SQLite database and persist video records (`NOT_STARTED`)
-- [ ] Build asynchronous background worker with state transitions (`NOT_STARTED`)
-- [ ] Implement audio extraction to 16kHz mono WAV via FFmpeg (`NOT_STARTED`)
-- [ ] Add endpoints `GET /api/videos`, `GET /api/videos/{id}`, `GET /api/videos/{id}/status` (`NOT_STARTED`)
-- [ ] Build frontend video upload page with live job progress (`NOT_STARTED`)
+- [x] Implement `POST /api/videos` with multipart validation (`VERIFIED`)
+- [x] Sanitize filenames and generate server-side UUID storage names (`VERIFIED`)
+- [x] Integrate FFprobe for metadata extraction (duration, resolution, fps, streams) (`VERIFIED`)
+- [x] Initialize SQLite database and persist video records (`VERIFIED`)
+- [x] Build asynchronous background worker with state transitions (`VERIFIED`)
+- [x] Implement audio extraction to 16kHz mono WAV via FFmpeg (`VERIFIED`)
+- [x] Add endpoints `GET /api/videos`, `GET /api/videos/{id}`, `GET /api/videos/{id}/status`, `GET /api/videos/{id}/stream` (`VERIFIED`)
+- [x] Build frontend video upload page with live job progress and video playback preview (`VERIFIED`)
 
 ### Phase 3: Timestamped Transcription and Text Indexing
 - [ ] Integrate Faster-Whisper ASR with configurable model size and compute type (`NOT_STARTED`)
