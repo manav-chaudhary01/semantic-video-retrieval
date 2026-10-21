@@ -1,986 +1,269 @@
-# Semantic Video Retrieval
+# Semantic Video Retrieval Using Deep Learning
 
-> **A multimodal deep learning system for searching and retrieving relevant moments from long-form videos using natural-language queries.**
+> **A full-stack, multimodal deep learning system for searching, indexing, and retrieving relevant moments from long-form videos using natural-language queries with synchronized timeline playback.**
 
-## Overview
-
-**Semantic Video Retrieval** is an academic deep learning project focused on making long, unstructured videos searchable by **meaning rather than just keywords**.
-
-The goal is to allow a user to upload a long video—such as a lecture, meeting, interview, presentation, training session, or project recording—and ask questions or describe the information they are looking for in natural language.
-
-For example:
-
-```text
-"Where was the database architecture discussed?"
-```
-
-or:
-
-```text
-"Find the section where Redis was explained."
-```
-
-or:
-
-```text
-"Show me where the architecture diagram appears."
-```
-
-Instead of manually watching the entire video, the system will process the video's **audio, transcript, visual content, and temporal information**, create semantic representations of its segments, and retrieve the most relevant moments.
-
-The expected result is something like:
-
-```text
-Query:
-"Where was the database architecture discussed?"
-
-Results:
-
-01:14:32 — Database architecture
-01:17:08 — PostgreSQL discussion
-01:21:45 — Database schema
-
-                    [▶ Play]
-```
-
-Selecting a result should take the user directly to the corresponding timestamp in the original video.
+[![Status](https://img.shields.io/badge/Status-Phases_0--8_VERIFIED-success.svg)](#status)
+[![Backend](https://img.shields.io/badge/Backend-FastAPI-blue.svg)](https://fastapi.tiangolo.com/)
+[![Frontend](https://img.shields.io/badge/Frontend-React_19_|_TypeScript_|_Tailwind_CSS-cyan.svg)](https://react.dev/)
+[![Embeddings](https://img.shields.io/badge/Embeddings-Sentence--Transformers_|_CLIP_ViT--B--32-orange.svg)](https://huggingface.co/)
+[![Vector Search](https://img.shields.io/badge/Vector_Search-FAISS-green.svg)](https://github.com/facebookresearch/faiss)
+[![Speech ASR](https://img.shields.io/badge/ASR-Faster--Whisper-purple.svg)](https://github.com/SYSTRAN/faster-whisper)
 
 ---
 
-## Motivation
+## 1. System Overview & Architecture
 
-Long-form video contains a large amount of valuable information, but finding a specific piece of information can be difficult.
+**Semantic Video Retrieval** indexes spoken dialogue and visual scene keyframes from videos into dual dense vector search spaces, enabling sub-80ms semantic retrieval over hours of video footage.
 
-A traditional workflow might look like:
+### Core Capabilities:
+- **Speech Dialogue Semantic Search**: Transcribes speech using Faster-Whisper with word-level timestamps and indexes cohesive speech chunks using Sentence-Transformers (`all-MiniLM-L6-v2`, 384-d).
+- **Visual Scene Cross-Modal Search**: Samples visual keyframes at configurable temporal intervals (default: 2.0s) and computes cross-modal embeddings using OpenAI CLIP (`ViT-B-32`, 512-d).
+- **Temporal Consolidator & Multimodal Fusion**: Consolidates speech and visual evidence within matching temporal windows using either **Calibrated Linear Fusion** ($\alpha \cdot \text{text} + \beta \cdot \text{visual}$) or **Reciprocal Rank Fusion (RRF)**.
+- **Synchronized Video Player**: Custom HTML5 video player with RFC 7233 byte-range seeking that instantly jumps to exact timestamp coordinates upon clicking search results.
+- **Security & Reliability**: Thread-safe sliding window rate limiting, path traversal protection, UUID validation, and offline-capable mock ML test suites.
 
-```text
-Open video
-   ↓
-Watch / scrub through timeline
-   ↓
-Search subtitles or guess timestamps
-   ↓
-Skip through multiple sections
-   ↓
-Find relevant content
-```
+```mermaid
+flowchart TD
+    subgraph Client ["Frontend (React 19 + TypeScript + Tailwind CSS)"]
+        UI["Search & Timeline Player"]
+        Upload["Video Upload Manager"]
+        Results["Ranked Results & Time Jump"]
+    end
 
-Semantic Video Retrieval aims to change this into:
+    subgraph Security ["Security & Rate Limiting"]
+        RateLimiter["Sliding Window Rate Limiter"]
+        PathSanitizer["Safe Path Resolution & UUID Validation"]
+    end
 
-```text
-Natural-language query
-        ↓
-Semantic search
-        ↓
-Relevant video segment
-        ↓
-Timestamp
-        ↓
-Direct playback
-```
+    subgraph Backend ["FastAPI Application"]
+        Router["API Routers (/api/videos, /api/search, /api/health)"]
+        WorkerQueue["Background Task Processing Service"]
+    end
 
-The project essentially aims to build a **search engine for video content**.
+    subgraph Storage ["Persistent Storage"]
+        SQLite[("SQLite Metadata DB")]
+        DiskStorage[("Local Disk (data/videos, audio, frames)")]
+    end
 
----
+    subgraph ML_Pipeline ["ML Ingestion Pipeline"]
+        FFmpegProc["FFmpeg / FFprobe (Audio & Frames)"]
+        WhisperProc["Faster-Whisper ASR (Timestamps & Text)"]
+        TextEmbed["Sentence-Transformers (384-d)"]
+        VisionEmbed["OpenAI CLIP ViT-B-32 (512-d)"]
+    end
 
-## Core Concept
+    subgraph Retrieval ["Dual FAISS Vector Search"]
+        FAISS_Text[("FAISS Text Index (IndexFlatIP)")]
+        FAISS_Visual[("FAISS Visual Index (IndexFlatIP)")]
+        FusionEngine["Multimodal Temporal Consolidator"]
+    end
 
-A video contains multiple modalities:
+    Upload --> RateLimiter --> Router --> PathSanitizer --> WorkerQueue
+    WorkerQueue --> FFmpegProc --> WhisperProc --> TextEmbed --> FAISS_Text
+    FFmpegProc --> VisionEmbed --> FAISS_Visual
+    WorkerQueue --> SQLite
 
-### Visual
-
-* People
-* Objects
-* Screens
-* Code
-* Slides
-* Whiteboards
-* Diagrams
-* Scenes
-
-### Audio
-
-* Spoken explanations
-* Questions
-* Discussions
-* Conversations
-* Presentations
-
-### Text
-
-* Transcripts
-* Extracted speech
-* Semantic representations of spoken content
-
-### Temporal information
-
-The meaning of content also depends on **when it occurs and its surrounding context**.
-
-The proposed system combines these sources:
-
-```text
-                       VIDEO
-                         │
-              ┌──────────┴──────────┐
-              │                     │
-           VISUAL                  AUDIO
-              │                     │
-       Frame Extraction       Audio Extraction
-              │                     │
-       Vision Encoder             Whisper
-              │                     │
-     Visual Embeddings          Transcript
-              │                     │
-              └──────────┬──────────┘
-                         │
-                  Text Embeddings
-                         │
-                         ↓
-                Multimodal Index
-                         │
-                         ↓
-                  Vector Search
-                         │
-                         ↓
-                  Ranked Results
-                         │
-                         ↓
-               Timestamp + Context
-                         │
-                         ↓
-                  Video Playback
+    UI --> RateLimiter --> Router --> FusionEngine
+    FusionEngine --> FAISS_Text
+    FusionEngine --> FAISS_Visual
+    FusionEngine --> SQLite --> Results
 ```
 
 ---
 
-# Project Objectives
+## 2. Technology Stack
 
-The main objectives are:
-
-* Develop a system for semantic retrieval from long-form videos.
-* Convert video content into searchable temporal segments.
-* Extract timestamped transcripts using speech recognition.
-* Generate semantic text representations using pretrained embedding models.
-* Extract visual representations from representative video frames.
-* Combine visual and textual information for multimodal retrieval.
-* Store embeddings in an efficient vector index.
-* Support natural-language search queries.
-* Return relevant video segments with timestamps.
-* Enable direct playback from retrieved timestamps.
-* Evaluate retrieval performance quantitatively.
+| Layer | Component | Specification |
+|---|---|---|
+| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS, Lucide Icons | Responsive modern UI with direct timeline seeking, live progress bars, and confidence badges |
+| **Backend** | FastAPI, Uvicorn, Python 3.12 | RESTful API with Pydantic v2 validation, background workers, and structured logging |
+| **Metadata DB** | SQLite, SQLAlchemy ORM | ACID-compliant storage for videos, jobs, transcript segments, and frame metadata |
+| **Vector Engine** | FAISS (`IndexFlatIP`) | High-performance in-memory inner product vector search with disk persistence |
+| **Speech ASR** | Faster-Whisper (`base` / `int8`) | CTranslate2-accelerated automatic speech recognition with word-level timestamps |
+| **Text Embedder** | Sentence-Transformers (`all-MiniLM-L6-v2`) | 384-dimensional dense semantic sentence representations |
+| **Vision Embedder**| OpenAI CLIP (`ViT-B-32` / `clip-vit-base-patch32`) | 512-dimensional joint image-text vision embeddings |
+| **Media Toolkit** | FFmpeg, FFprobe, OpenCV | Audio extraction (16kHz mono WAV), scene frame extraction, and RFC 7233 streaming |
 
 ---
 
-# Proposed System
+## 3. Quick Start Guide
 
-The system will process a video in several stages.
-
-## 1. Video Upload
-
-The user uploads a video through a web interface.
-
-```text
-User
- ↓
-React Frontend
- ↓
-FastAPI Backend
- ↓
-Video Storage
-```
-
-The backend will create metadata for the uploaded video and initiate processing.
+### Prerequisites
+- **Operating System**: Windows 11 / Linux / macOS
+- **Python**: 3.10+ (tested on Python 3.12.10)
+- **Node.js**: 18+ (tested with npm)
+- **FFmpeg**: Installed and accessible on your system `PATH` (or configured via environment)
 
 ---
 
-## 2. Video Preprocessing
+### Step 1: Clone and Set Up Python Environment
+```powershell
+# Clone the repository
+git clone https://github.com/your-username/semantic-video-retrieval.git
+cd semantic-video-retrieval
 
-Long videos will be divided into temporal segments.
+# Create and activate Python virtual environment
+python -m venv .venv
+.\.venv\Scripts\activate   # On Windows
+# source .venv/bin/activate  # On Linux / macOS
 
-For example:
-
-```text
-01:00:00 ───────── 01:00:45
-        Segment 1
-
-01:00:45 ───────── 01:01:30
-        Segment 2
-
-01:01:30 ───────── 01:02:15
-        Segment 3
+# Install backend dependencies
+pip install -r backend/requirements.txt
 ```
 
-Each segment will retain its relationship to the original video:
-
-```text
-Segment ID
-Video ID
-Start timestamp
-End timestamp
-Transcript
-Visual features
-Embeddings
+### Step 2: Configure Environment Variables
+```powershell
+# Copy the example environment template
+cp .env.example .env
 ```
+*(The defaults in `.env` are configured for local execution out-of-the-box).*
 
-The exact segmentation strategy will be experimented with during development.
-
----
-
-# 3. Speech Recognition
-
-The audio track will be extracted from the video and processed using an automatic speech recognition model such as **Whisper**.
-
-Conceptually:
-
-```text
-Video
- ↓
-Audio
- ↓
-Whisper
- ↓
-Timestamped Transcript
-```
-
-Example:
-
-```text
-00:14:21
-"We will use PostgreSQL as the primary database."
-
-00:14:36
-"The backend will communicate through FastAPI."
-
-00:15:02
-"Redis will be used for distributed locking."
-```
-
-Maintaining timestamps is essential because the final retrieval system needs to connect semantic results back to the original video.
-
----
-
-# 4. Text Embeddings
-
-The transcript will be converted into semantic vector representations using a pretrained text embedding model.
-
-```text
-Transcript
-    ↓
-Embedding Model
-    ↓
-Semantic Vector
-```
-
-This allows the system to retrieve conceptually related content rather than relying exclusively on exact keyword matches.
-
-For example:
-
-```text
-Query:
-"Where was persistent storage discussed?"
-
-Possible transcript:
-"PostgreSQL will be used as the primary database."
-```
-
-The system aims to recognize the semantic relationship between these concepts.
-
----
-
-# 5. Visual Understanding
-
-Representative frames will be extracted from each temporal segment.
-
-```text
-Video Segment
-      ↓
-Frame Sampling
-      ↓
-┌──────┬──────┬──────┬──────┐
-│Frame1│Frame2│Frame3│Frame4│
-└──────┴──────┴──────┴──────┘
-      ↓
-Vision Encoder
-      ↓
-Visual Embeddings
-```
-
-Possible pretrained models include:
-
-* CLIP
-* Vision Transformer (ViT)
-* Other suitable vision-language models
-
-This component is intended to allow retrieval based on information that may appear visually even when it is not explicitly spoken.
-
-For example:
-
-```text
-"Where was the architecture diagram shown?"
-```
-
-could potentially retrieve a segment containing an architecture diagram even if the speaker does not use those exact words.
-
----
-
-# 6. Multimodal Retrieval
-
-One of the central research components is combining information from different modalities.
-
-A segment may contain:
-
-```text
-Transcript:
-"Redis will be used for distributed locking."
-
-Visual:
-Architecture diagram showing Redis.
-```
-
-The system can represent both sources of information.
-
-A simple retrieval strategy may combine text and visual similarity:
-
-```text
-Final Score =
-    α × Text Similarity
-    +
-    (1 − α) × Visual Similarity
-```
-
-Different values of `α` can be experimentally evaluated.
-
-This allows the project to compare:
-
-```text
-Text-only retrieval
-        vs
-Visual-only retrieval
-        vs
-Multimodal retrieval
+### Step 3: Install Frontend Dependencies
+```powershell
+cd frontend
+npm install
+cd ..
 ```
 
 ---
 
-# 7. Temporal Context
+### Step 4: Run the Application
 
-Individual video segments may not contain enough context to fully represent an event or discussion.
-
-Therefore, a future stage of the project will investigate temporal context.
-
-Conceptually:
-
-```text
-Previous Segment
-       ↓
-Current Segment
-       ↓
-Next Segment
-       ↓
-Temporal Model
-       ↓
-Context-aware Representation
+#### Start Backend Server:
+```powershell
+.\.venv\Scripts\uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
 ```
+- API Documentation (Swagger UI): `http://127.0.0.1:8000/docs`
+- Health Check: `http://127.0.0.1:8000/api/health`
 
-Potential approaches include:
-
-* Temporal pooling
-* LSTM / GRU
-* Temporal CNN
-* Transformer-based temporal modeling
-
-The exact approach will depend on experimental results and available computational resources.
+#### Start Frontend Client:
+```powershell
+npm --prefix frontend run dev
+```
+- Web Application UI: `http://127.0.0.1:5173`
 
 ---
 
-# 8. Vector Search
+## 4. Search Modalities
 
-The generated embeddings will be stored in a vector index.
-
-Possible technologies include:
-
-* FAISS
-* Qdrant
-
-The retrieval process will follow:
-
-```text
-User Query
-     ↓
-Query Embedding
-     ↓
-Vector Similarity Search
-     ↓
-Candidate Segments
-     ↓
-Ranking
-     ↓
-Top-K Results
-```
-
-A result may contain:
-
-```json
-{
-  "segment_id": 42,
-  "start": 4472.3,
-  "end": 4518.7,
-  "score": 0.87,
-  "transcript": "The database architecture..."
-}
-```
+1. **Dialogue Search (`modality="text"`)**:
+   - Matches queries against spoken dialogue transcripts.
+   - *Example*: `"Where does the speaker explain gradient descent?"`
+2. **Visual Search (`modality="visual"`)**:
+   - Matches queries directly against visual frames and scene entities using CLIP.
+   - *Example*: `"Show the moment when a red car appears."`
+3. **Multimodal Fused Search (`modality="multimodal"`)**:
+   - Merges dialogue and visual keyframe candidates occurring within a temporal context window (default: 10s).
+   - Supports **Balanced Linear Fusion** ($\alpha=0.5, \beta=0.5$) with score calibration and **Reciprocal Rank Fusion (RRF)**.
+   - *Example*: `"Speaker discussing global warming with ocean water visual."`
 
 ---
 
-# 9. Natural-Language Search
+## 5. Security & Reliability Controls
 
-The main user-facing functionality will be natural-language video search.
-
-Example:
-
-```text
-User:
-"Where was authentication discussed?"
-```
-
-The system will return relevant segments:
-
-```text
-01:28:14 — Authentication architecture
-01:30:02 — JWT implementation
-01:32:41 — Login flow
-```
-
-The user can then select a result and jump directly to that point in the video.
+- **Path Traversal Protection**: All disk access validates that file paths resolve strictly inside authorized data storage directories (`data/videos`, `data/frames`, `data/audio`). Malicious relative path escapes (`../../`) trigger HTTP 403 / 422.
+- **Sliding-Window Rate Limiting**: In-memory rate limiting prevents denial-of-service on search (60 req/min) and upload (15 req/min) with standard `Retry-After` headers.
+- **RFC 7233 Media Streaming**: Video streaming endpoints support HTTP Partial Content (206) with byte-range parsing for video seeking, appending `X-Content-Type-Options: nosniff` and `X-Frame-Options: SAMEORIGIN`.
+- **Offline-Capable Mock ML Tests**: In addition to end-to-end integration tests, offline mock test suites (`test_mock_ml_offline.py`) permit headless execution in CI environments without external model downloads or GPU hardware.
 
 ---
 
-# 10. Optional Video Question Answering
+## 6. Reproducible Benchmark Evaluation
 
-An advanced feature may allow users to ask questions about the video rather than simply search for keywords or concepts.
+The system includes a fully reproducible evaluation framework that executes 6 retrieval configurations across a version-controlled ground-truth dataset (`evaluation/data/benchmark_dataset.json`):
 
-For example:
-
-```text
-Question:
-"Why did the team choose Redis?"
+```powershell
+# Run the complete automated evaluation suite
+.\.venv\Scripts\python -m evaluation.run_benchmark
 ```
 
-Potential pipeline:
+### Measured Performance Summary (from `docs/EVALUATION_REPORT.md`):
+| Configuration | Recall@1 | Recall@5 | Precision@1 | MRR | Mean Latency | Rejection P@1 (Threshold >= 0.25) |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Text-Only (`all-MiniLM-L6-v2`)** | 0.600 | 0.600 | 0.600 | 0.600 | **16.9 ms** | **1.000 (3/3 rejected)** |
+| **Visual-Only (`CLIP ViT-B-32`)** | 0.400 | 0.533 | 0.400 | 0.439 | 31.2 ms | **1.000 (3/3 rejected)** |
+| **Multimodal Balanced (50/50 Linear)** | 0.600 | 0.733 | 0.600 | 0.656 | 43.2 ms | **1.000 (3/3 rejected)** |
+| **Multimodal Dialogue-Focused (70/30)**| **0.667** | 0.733 | **0.667** | **0.689** | 40.5 ms | **1.000 (3/3 rejected)** |
+| **Multimodal Reciprocal Rank Fusion (RRF)**| 0.600 | **0.800** | 0.600 | 0.663 | 43.6 ms | **1.000 (3/3 rejected)** |
 
-```text
-Question
-   ↓
-Query Embedding
-   ↓
-Semantic Retrieval
-   ↓
-Relevant Video Segments
-   ↓
-Transcript / Context
-   ↓
-Answer Generation
-   ↓
-Answer + Timestamp
-```
-
-The answer-generation component will be designed to use retrieved video content as its context rather than treating the entire video as an unconstrained knowledge source.
-
-This feature is considered **optional / advanced scope** for the initial implementation.
+*For complete ablation tables, hardware disclosures, and per-query predictions, see [`docs/EVALUATION_REPORT.md`](docs/EVALUATION_REPORT.md).*
 
 ---
 
-# System Architecture
+## 7. Running Tests
 
-The planned architecture is:
+```powershell
+# Run all backend unit, integration, security, and offline mock tests
+.\.venv\Scripts\pytest -v
 
-```text
-                         USER
-                           │
-                           ▼
-                  ┌─────────────────┐
-                  │ React Frontend  │
-                  └────────┬────────┘
-                           │
-                           ▼
-                  ┌─────────────────┐
-                  │ FastAPI Backend │
-                  └────────┬────────┘
-                           │
-                           ▼
-                     Video Upload
-                           │
-                           ▼
-                  Video Preprocessing
-                           │
-                ┌──────────┴──────────┐
-                │                     │
-                ▼                     ▼
-        Frame Extraction       Audio Extraction
-                │                     │
-                ▼                     ▼
-          Vision Encoder           Whisper
-                │                     │
-                ▼                     ▼
-        Visual Embeddings        Transcript
-                │                     │
-                └──────────┬──────────┘
-                           │
-                           ▼
-                   Text Embeddings
-                           │
-                           ▼
-                  Multimodal Index
-                           │
-                           ▼
-                    Vector Search
-                           ▲
-                           │
-                    Query Embedding
-                           ▲
-                           │
-                    Natural Language
-                         Query
-                           │
-                           ▼
-                   Ranked Segments
-                           │
-                           ▼
-                 Timestamp + Transcript
-                           │
-                           ▼
-                     Video Player
+# Run frontend production build check
+npm --prefix frontend run build
 ```
 
 ---
 
-# Technology Stack
-
-| Component          | Proposed Technology               |
-| ------------------ | --------------------------------- |
-| Frontend           | React                             |
-| Backend            | FastAPI                           |
-| Programming        | Python                            |
-| Deep Learning      | PyTorch                           |
-| Speech Recognition | Whisper                           |
-| Computer Vision    | OpenCV                            |
-| Vision Model       | CLIP / ViT                        |
-| Text Embeddings    | Transformer-based embedding model |
-| Vector Search      | FAISS / Qdrant                    |
-| Database           | PostgreSQL                        |
-| Video Processing   | FFmpeg                            |
-| API Communication  | REST                              |
-
-The exact models and infrastructure may change during development based on performance and resource constraints.
-
----
-
-# Project Roadmap
-
-## Phase 1 — Basic Video Pipeline
-
-```text
-Video Upload
-     ↓
-Audio Extraction
-     ↓
-Frame Extraction
-     ↓
-Temporal Segmentation
-     ↓
-Metadata Storage
-```
-
-## Phase 2 — Speech-Based Semantic Search
-
-```text
-Video
- ↓
-Whisper
- ↓
-Timestamped Transcript
- ↓
-Text Embeddings
- ↓
-Vector Search
- ↓
-Timestamped Results
-```
-
-## Phase 3 — Visual Retrieval
-
-```text
-Video
- ↓
-Frame Sampling
- ↓
-Vision Encoder
- ↓
-Visual Embeddings
- ↓
-Visual Search
-```
-
-## Phase 4 — Multimodal Retrieval
-
-```text
-Text Representation
-        +
-Visual Representation
-        ↓
-Multimodal Scoring
-        ↓
-Ranked Results
-```
-
-## Phase 5 — Temporal Modeling
-
-```text
-Segment Features
-      ↓
-Temporal Context
-      ↓
-Context-aware Representation
-      ↓
-Improved Retrieval
-```
-
-## Phase 6 — Optional Question Answering
-
-```text
-Question
- ↓
-Retrieval
- ↓
-Relevant Context
- ↓
-Answer Generation
- ↓
-Answer + Timestamp
-```
-
-## Phase 7 — Evaluation
-
-The system will be evaluated using retrieval and system-level metrics.
-
----
-
-# Evaluation
-
-The project will aim to evaluate both **retrieval quality** and **system performance**.
-
-### Retrieval Metrics
-
-* Recall@K
-* Precision@K
-* Mean Reciprocal Rank (MRR)
-* Mean Average Precision (mAP), where appropriate
-
-### Speech Recognition
-
-* Word Error Rate (WER)
-
-### System Performance
-
-* Video processing time
-* Embedding generation time
-* Indexing time
-* Query latency
-* Storage requirements
-* CPU/GPU utilization
-
-A key experiment will compare different retrieval configurations:
-
-```text
-                    Retrieval Performance
-
-Text-only
-    │
-    ├───────────────► Baseline
-    │
-Visual-only
-    │
-    ├───────────────► Baseline
-    │
-Text + Visual
-    │
-    ├───────────────► Multimodal
-    │
-Text + Visual + Temporal
-    │
-    └───────────────► Advanced Model
-```
-
-The actual performance values will be obtained experimentally.
-
----
-
-# Example Use Cases
-
-The system is intended to support use cases such as:
-
-### Education
-
-```text
-"Where was backpropagation explained?"
-```
-
-### Meetings
-
-```text
-"What was decided about authentication?"
-```
-
-### Presentations
-
-```text
-"Find the architecture diagram."
-```
-
-### Interviews
-
-```text
-"When did the candidate discuss their previous project?"
-```
-
-### Training
-
-```text
-"Show me the section explaining database indexing."
-```
-
-### Research
-
-```text
-"Find all sections discussing transformer architectures."
-```
-
----
-
-# Expected Output
-
-The final application is expected to provide a search experience similar to:
-
-```text
-┌──────────────────────────────────────────────┐
-│          SEMANTIC VIDEO RETRIEVAL            │
-├──────────────────────────────────────────────┤
-│                                              │
-│ Search                                       │
-│ ┌──────────────────────────────────────────┐ │
-│ │ Where was database architecture          │ │
-│ │ discussed?                           🔍  │ │
-│ └──────────────────────────────────────────┘ │
-│                                              │
-├──────────────────────────────────────────────┤
-│ RESULTS                                      │
-│                                              │
-│ 01:14:32  Database architecture              │
-│           "The system will use..."           │
-│                                              │
-│ 01:17:08  PostgreSQL discussion              │
-│           "We decided to use..."             │
-│                                              │
-│ 01:21:45  Database schema                    │
-│           "The schema contains..."           │
-│                                              │
-└──────────────────────────────────────────────┘
-```
-
-Clicking a result should navigate the video player to the corresponding timestamp.
-
----
-
-# Project Structure
-
-The repository is expected to evolve toward a structure similar to:
+## 8. Project Structure
 
 ```text
 semantic-video-retrieval/
-│
-├── frontend/
-│   └── ...
-│
 ├── backend/
-│   ├── api/
-│   ├── services/
-│   ├── models/
-│   └── main.py
-│
-├── ml/
-│   ├── transcription/
-│   ├── embeddings/
-│   ├── vision/
-│   ├── retrieval/
-│   └── temporal/
-│
-├── data/
-│   ├── videos/
-│   ├── frames/
-│   └── transcripts/
-│
-├── tests/
-│
-├── notebooks/
-│
+│   ├── app/
+│   │   ├── api/             # Modular API routes (videos, search, frames, transcripts)
+│   │   ├── core/            # Configuration, logging, security, rate limiting, exceptions
+│   │   ├── db/              # SQLAlchemy session and schema migrations
+│   │   ├── ml/              # Faster-Whisper, Sentence-Transformers, CLIP, FAISS index
+│   │   ├── models/          # Video, ProcessingJob, TranscriptSegment, VisualFrame ORM
+│   │   ├── schemas/         # Pydantic v2 schemas and validators
+│   │   ├── services/        # Audio, video, chunking, search, temporal consolidation
+│   │   └── main.py          # FastAPI application factory and lifespan manager
+│   ├── tests/               # 40 comprehensive unit, integration, and mock ML tests
+│   └── requirements.txt     # Backend Python dependencies
+├── frontend/
+│   ├── src/
+│   │   ├── api/             # Typed API client
+│   │   ├── components/      # VideoPlayer, SearchBar, ResultCard, UploadModal
+│   │   ├── pages/           # SearchPage, VideosPage
+│   │   └── types/           # TypeScript API interfaces
+│   └── package.json         # Frontend Node.js dependencies
+├── data/                    # Local storage (gitignored except .gitkeep)
+│   ├── videos/              # Stored uploaded video files
+│   ├── audio/               # Extracted 16kHz mono WAV files
+│   ├── frames/              # Sampled visual keyframe JPEGs
+│   └── indexes/             # FAISS index files and ID maps
+├── evaluation/              # Phase 7 & 8 evaluation benchmarking harness
+│   ├── data/                # Ground-truth dataset schema and benchmark annotations
+│   ├── results/             # Machine-readable evaluation JSON output
+│   ├── benchmark_generator.py # Automated corpus generator and indexer
+│   ├── evaluator.py         # Multi-configuration retrieval evaluation engine
+│   └── run_benchmark.py     # Single-command CLI evaluation runner
 ├── docs/
-│
-├── requirements.txt
-└── README.md
+│   ├── API_CONTRACTS.md     # Full OpenAPI contract specification
+│   ├── ARCHITECTURE.md      # Detailed system architecture and sequence flows
+│   ├── DATABASE_SCHEMA.md   # SQLite schema and entity relationship diagrams
+│   ├── DEVELOPMENT_ROADMAP.md # Phase-by-phase implementation checklist
+│   └── EVALUATION_REPORT.md # Formal empirical evaluation and ablation study report
+├── .env.example             # Configuration template
+└── README.md                # Project documentation
 ```
 
-The structure may change as implementation progresses.
+---
+
+## 9. Status & Roadmap
+
+| Phase | Milestone | Status |
+|---|---|:---:|
+| **Phase 0** | Requirements, Architecture, and Planning | `VERIFIED` |
+| **Phase 1** | Project Scaffolding & Application Foundation | `VERIFIED` |
+| **Phase 2** | Video Upload, Validation, and Preprocessing | `VERIFIED` |
+| **Phase 3** | Timestamped Transcription & Text Indexing | `VERIFIED` |
+| **Phase 4** | Semantic Search MVP & Frontend Integration | `VERIFIED` |
+| **Phase 5** | Visual Content Retrieval (OpenAI CLIP ViT-B-32) | `VERIFIED` |
+| **Phase 6** | Multimodal Fusion & Temporal Context Consolidation | `VERIFIED` |
+| **Phase 7** | Evaluation, Benchmarking & Bottleneck Optimization | `VERIFIED` |
+| **Phase 8** | Reliability, Security, Documentation & Final Demo | `VERIFIED` |
 
 ---
 
-# Scope
+## 10. License
 
-## Core Scope
-
-The initial target is:
-
-* Video upload
-* Video segmentation
-* Audio extraction
-* Speech-to-text
-* Timestamped transcripts
-* Text embeddings
-* Vector search
-* Natural-language queries
-* Timestamp-based retrieval
-* Video playback
-
-## Extended Scope
-
-If the core system is stable:
-
-* Visual embeddings
-* Multimodal retrieval
-* Temporal context
-* Improved ranking
-* Retrieval evaluation
-* Video question answering
-
-## Future Scope
-
-Potential future extensions include:
-
-* Multilingual search
-* Speaker identification
-* Object-based retrieval
-* Event retrieval
-* Image-to-video search
-* Video-to-video retrieval
-* Automatic chapter generation
-* Large-scale video-library search
-* Multimodal question answering
-
----
-
-# Academic Relevance
-
-This project brings together several areas of AI and software engineering:
-
-### Deep Learning
-
-* Transformer architectures
-* Representation learning
-* Vision-language models
-* Temporal modeling
-
-### Computer Vision
-
-* Frame extraction
-* Visual feature extraction
-* Image/video understanding
-
-### Natural Language Processing
-
-* Text embeddings
-* Semantic similarity
-* Natural-language queries
-
-### Speech Processing
-
-* Automatic speech recognition
-* Timestamped transcription
-
-### Multimodal AI
-
-* Visual + textual representations
-* Multimodal retrieval
-
-### Information Retrieval
-
-* Vector search
-* Similarity ranking
-* Top-K retrieval
-* Retrieval evaluation
-
-### Software Engineering
-
-* React
-* FastAPI
-* PostgreSQL
-* Vector databases
-* REST APIs
-
----
-
-# Development Strategy
-
-The project will be developed incrementally.
-
-The priority is to establish a working retrieval system first:
-
-```text
-                    MVP
-                     │
-                     ▼
-             Speech + Text Search
-                     │
-                     ▼
-             Working Web Application
-                     │
-                     ▼
-             Visual Retrieval
-                     │
-                     ▼
-           Multimodal Retrieval
-                     │
-                     ▼
-            Temporal Enhancement
-                     │
-                     ▼
-             Evaluation + Polish
-```
-
-This approach ensures that the project has a functional core even if the more experimental components require additional research or development time.
-
----
-
-# Status
-
-**Project Status:** `In Development`
-
-The repository currently represents the planned architecture, objectives, and development direction. Implementation will be added progressively according to the project roadmap.
-
----
-
-# Vision
-
-The long-term goal is to turn unstructured video collections into searchable knowledge.
-
-Instead of asking:
-
-> **"Where in this video was that discussed?"**
-
-the user should simply ask:
-
-> **"Find it."**
-
----
-
-## One-Line Description
-
-> **Semantic Video Retrieval uses multimodal deep learning to understand video content and retrieve relevant moments from long videos using natural-language queries.**
+This academic project is licensed under the MIT License.

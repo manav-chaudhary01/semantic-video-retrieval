@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 from backend.app.core.config import settings
 from backend.app.core.logging import logger
 from backend.app.core.exceptions import ValidationError
+from backend.app.core.security import validate_uuid
 from backend.app.ml.text_embeddings import text_embedder
 from backend.app.ml.visual_embeddings import visual_embedder
 from backend.app.ml.vector_index import text_vector_index, visual_vector_index
@@ -34,6 +35,9 @@ class SearchService:
             raise ValidationError(
                 f"Unsupported search modality '{req.modality}'. Supported: 'text', 'visual', 'multimodal'."
             )
+
+        if req.video_id:
+            req.video_id = validate_uuid(req.video_id, "video_id")
 
         if req.modality == "multimodal":
             return self._search_multimodal(db, req, query_text, start_time)
@@ -247,6 +251,8 @@ class SearchService:
                 text_vector_index.total_vectors,
             )
             raw_text = text_vector_index.search(query_vector_text, top_k=cand_k_text)
+            if req.threshold is not None and raw_text:
+                raw_text = [(sid, s) for sid, s in raw_text if s >= req.threshold]
             if raw_text:
                 candidate_ids = [seg_id for seg_id, _ in raw_text]
                 q_text = (
@@ -282,6 +288,8 @@ class SearchService:
                 visual_vector_index.total_vectors,
             )
             raw_vis = visual_vector_index.search(query_vector_visual, top_k=cand_k_visual)
+            if req.threshold is not None and raw_vis:
+                raw_vis = [(fid, s) for fid, s in raw_vis if s >= req.threshold]
             if raw_vis:
                 candidate_ids = [frame_id for frame_id, _ in raw_vis]
                 q_vis = (
