@@ -12,6 +12,8 @@ import {
   AlertTriangle,
   RefreshCw,
   FileVideo,
+  FileText,
+  Sparkles,
 } from 'lucide-react';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -20,7 +22,7 @@ import { EmptyState } from '../components/common/EmptyState';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { api } from '../api/client';
-import type { Video, ProcessingJobStatus } from '../types';
+import type { Video, ProcessingJobStatus, TranscriptResponse } from '../types';
 
 export const VideosPage: React.FC = () => {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -34,8 +36,11 @@ export const VideosPage: React.FC = () => {
 
   // Preview modal state
   const [previewVideo, setPreviewVideo] = useState<Video | null>(null);
+  const [previewTranscript, setPreviewTranscript] = useState<TranscriptResponse | null>(null);
+  const [isLoadingTranscript, setIsLoadingTranscript] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadVideos = useCallback(async () => {
@@ -56,6 +61,20 @@ export const VideosPage: React.FC = () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     };
   }, [loadVideos]);
+
+  useEffect(() => {
+    if (!previewVideo) {
+      setPreviewTranscript(null);
+      return;
+    }
+    if (previewVideo.status === 'READY') {
+      setIsLoadingTranscript(true);
+      api.getTranscript(previewVideo.id)
+        .then((data) => setPreviewTranscript(data))
+        .catch(() => setPreviewTranscript(null))
+        .finally(() => setIsLoadingTranscript(false));
+    }
+  }, [previewVideo]);
 
   // Poll active processing job
   const startPollingJob = useCallback((videoId: string) => {
@@ -362,14 +381,19 @@ export const VideosPage: React.FC = () => {
         )}
       </div>
 
-      {/* Video Playback Modal */}
+      {/* Video Playback & Transcript Modal */}
       {previewVideo && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-5xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-950/60">
               <div className="flex items-center gap-2 truncate">
                 <Film className="w-4 h-4 text-indigo-400" />
                 <h3 className="text-sm font-semibold text-slate-100 truncate">{previewVideo.original_filename}</h3>
+                {previewTranscript && (
+                  <Badge variant="info">
+                    {previewTranscript.language?.toUpperCase() ?? 'AUDIO'} &bull; {previewTranscript.total_segments} Segment(s)
+                  </Badge>
+                )}
               </div>
               <button
                 onClick={() => setPreviewVideo(null)}
@@ -379,15 +403,74 @@ export const VideosPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-4 bg-black flex items-center justify-center aspect-video">
-              <video
-                controls
-                autoPlay
-                className="w-full h-full rounded-lg"
-                src={api.getVideoStreamUrl(previewVideo.id)}
-              >
-                Your browser does not support the video tag.
-              </video>
+            <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+              {/* Left Column: Video player */}
+              <div className="flex-1 bg-black flex flex-col justify-center items-center p-3">
+                <video
+                  ref={videoRef}
+                  controls
+                  autoPlay
+                  className="w-full max-h-[50vh] lg:max-h-[60vh] rounded-lg shadow-lg"
+                  src={api.getVideoStreamUrl(previewVideo.id)}
+                >
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+
+              {/* Right Column: Indexed Transcripts & Segments */}
+              <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-slate-800 bg-slate-950/50 flex flex-col max-h-64 lg:max-h-[60vh]">
+                <div className="p-3 border-b border-slate-800/80 bg-slate-900/50 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-200">
+                    <FileText className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Indexed Transcript Segments</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-mono">Phase 3 Semantic Index</span>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
+                  {isLoadingTranscript ? (
+                    <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
+                      <LoadingSpinner size="md" />
+                      <span className="text-xs">Loading speech transcript...</span>
+                    </div>
+                  ) : previewTranscript && previewTranscript.segments.length > 0 ? (
+                    previewTranscript.segments.map((seg, idx) => (
+                      <div
+                        key={seg.id || idx}
+                        onClick={() => {
+                          if (videoRef.current) {
+                            videoRef.current.currentTime = seg.start_time;
+                            videoRef.current.play();
+                          }
+                        }}
+                        className="group p-2.5 bg-slate-900/80 hover:bg-indigo-950/40 border border-slate-800/80 hover:border-indigo-600/50 rounded-xl transition-all cursor-pointer shadow-sm text-left"
+                      >
+                        <div className="flex items-center justify-between gap-1 mb-1.5">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-950/80 text-indigo-300 border border-indigo-800/50 text-[11px] font-mono group-hover:bg-indigo-900/90 transition-colors">
+                            <Clock className="w-2.5 h-2.5" />
+                            {formatDuration(seg.start_time)} - {formatDuration(seg.end_time)}
+                          </span>
+                          {seg.index_reference !== undefined && seg.index_reference !== null && (
+                            <span className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
+                              <Sparkles className="w-2.5 h-2.5 text-indigo-400" />
+                              FAISS #{seg.index_reference}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed group-hover:text-slate-100">
+                          {seg.text}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="py-12 text-center text-slate-500 text-xs">
+                      {previewVideo.has_audio
+                        ? 'No speech detected or transcript empty.'
+                        : 'Video has no audio track.'}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="px-5 py-3 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
