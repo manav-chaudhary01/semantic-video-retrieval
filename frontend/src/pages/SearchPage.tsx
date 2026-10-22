@@ -208,7 +208,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
             Retrieval Workspace
           </span>
           <h1 className="text-3xl sm:text-5xl font-semibold font-display uppercase tracking-tight text-white">
-            Moment Search ( 24-26 )
+            Moment Search
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 max-w-xl font-sans">
             Locate exact sub-second timestamps in video archives through spoken dialogue, visual scene semantics, or multimodal fusion.

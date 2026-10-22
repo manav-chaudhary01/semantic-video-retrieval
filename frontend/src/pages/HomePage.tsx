@@ -86,24 +86,12 @@ const PIPELINE_STAGES = [
   },
 ];
 
-const TICKER_ITEMS = [
-  'RECALL@1: 100%',
-  'MEAN RECIPROCAL RANK: 1.0',
-  'MULTIMODAL FUSION: RRF (k=60)',
-  'TEMPORAL RESOLUTION: SUB-SECOND',
-  'VECTOR INDEX: FAISS FLAT-IP',
-  'EMBEDDING LATENCY: 12ms',
-  'SPEECH ENGINE: FASTER-WHISPER',
-  'VISION ENGINE: CLIP ViT-B/32',
-];
-
 export const HomePage: React.FC<HomePageProps> = ({
   onNavigateToSearch,
   onNavigateToVideos,
   onNavigateToDiagnostics,
 }) => {
   const [heroQuery, setHeroQuery] = useState('');
-  const [activePipelineStage, setActivePipelineStage] = useState(0);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const cardsRef = useRef<HTMLDivElement | null>(null);
@@ -145,26 +133,26 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   return (
     <div ref={containerRef} className="space-y-24 sm:space-y-32">
-      {/* 1. HERO SECTION - Miles Oversized Editorial Display */}
+      {/* 1. HERO SECTION - Clean Editorial Display */}
       <section className="pt-6 sm:pt-14 pb-8 space-y-8">
         {/* Category Pill Tag */}
         <div className="clip-mask">
           <div className="hero-reveal-1 inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-white/15 bg-neutral-900/60 text-xs font-mono tracking-widest uppercase text-neutral-300">
             <span className="w-1.5 h-1.5 rounded-full bg-white" />
-            <span>Multimodal Video Retrieval &bull; 24-26</span>
+            <span>Multimodal Video Retrieval</span>
           </div>
         </div>
 
-        {/* Oversized Headline */}
+        {/* Oversized Headline - Actual Product Name */}
         <div className="space-y-1 select-none">
           <div className="clip-mask">
-            <h1 className="hero-reveal-2 font-display font-medium text-6xl sm:text-8xl md:text-9xl tracking-tighter uppercase text-white leading-[0.9]">
-              RETRIEVAL
+            <h1 className="hero-reveal-2 font-display font-medium text-5xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tighter uppercase text-white leading-[0.95]">
+              Semantic Video
             </h1>
           </div>
           <div className="clip-mask">
-            <h1 className="hero-reveal-3 font-display font-medium text-6xl sm:text-8xl md:text-9xl tracking-tighter uppercase text-neutral-400 leading-[0.9]">
-              ( 24-26 )
+            <h1 className="hero-reveal-3 font-display font-medium text-5xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tighter uppercase text-neutral-400 leading-[0.95]">
+              Retrieval
             </h1>
           </div>
         </div>
@@ -176,7 +164,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           </p>
         </div>
 
-        {/* Search Console Input Bar + Quick CTAs */}
+        {/* Search Console Input Bar + Quick Links */}
         <div className="clip-mask pt-2">
           <div className="hero-reveal-5 max-w-2xl space-y-4">
             <form
@@ -219,19 +207,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       </section>
 
-      {/* 2. RESTRAINED MARQUEE TICKER (Miles Works Marquee Style) */}
-      <section className="border-y border-white/10 py-4 -mx-4 sm:-mx-6 lg:-mx-8 overflow-hidden bg-neutral-950/40 select-none">
-        <div className="ticker-track flex items-center gap-12 font-mono text-xs uppercase tracking-widest text-neutral-400">
-          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, idx) => (
-            <div key={idx} className="flex items-center gap-4 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
-              <span className="text-neutral-300 font-medium">{item}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 3. MODALITY SHOWCASE GALLERY (Miles Featured Works Style) */}
+      {/* 2. MODALITY SHOWCASE GALLERY */}
       <section className="space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b border-white/10">
           <div>
@@ -349,7 +325,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       </section>
 
-      {/* 4. PIPELINE GRID (Miles Capabilities Style) */}
+      {/* 3. PIPELINE GRID - Hover-Driven Highlighting Without Persistent Active State */}
       <section className="space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b border-white/10">
           <div>
@@ -365,29 +341,27 @@ export const HomePage: React.FC<HomePageProps> = ({
           </p>
         </div>
 
-        {/* 4-Stage Cards Grid */}
+        {/* 4-Stage Cards Grid - Hover-Driven Highlighting & Keyboard Focus */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {PIPELINE_STAGES.map((stage, idx) => (
+          {PIPELINE_STAGES.map((stage) => (
             <div
               key={stage.index}
-              onClick={() => setActivePipelineStage(idx)}
-              className={`p-7 rounded-2xl border transition-all duration-300 cursor-pointer ${
-                activePipelineStage === idx
-                  ? 'bg-neutral-900/90 border-white/40 shadow-md'
-                  : 'bg-neutral-950 border-white/10 hover:border-white/25'
-              }`}
+              tabIndex={0}
+              role="region"
+              aria-label={`Inference Stage ${stage.index}: ${stage.title}`}
+              className="p-7 rounded-2xl border border-white/10 bg-neutral-950 hover:bg-neutral-900/80 hover:border-white/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:border-white/40 transition-all duration-300 group"
             >
-              <div className="flex items-center justify-between pb-4 border-b border-white/10">
-                <span className="font-mono text-xs font-semibold text-neutral-400 tracking-widest">
+              <div className="flex items-center justify-between pb-4 border-b border-white/10 group-hover:border-white/20 transition-colors">
+                <span className="font-mono text-xs font-semibold text-neutral-400 group-hover:text-white tracking-widest transition-colors">
                   STAGE {stage.index}
                 </span>
-                <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-400">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 group-hover:text-neutral-300 transition-colors">
                   {stage.technical}
                 </span>
               </div>
 
               <div className="mt-4 space-y-2">
-                <h4 className="text-lg font-semibold font-display text-white">
+                <h4 className="text-lg font-semibold font-display text-white group-hover:text-white transition-colors">
                   {stage.title}
                 </h4>
                 <p className="text-xs text-neutral-300 font-sans leading-relaxed">
@@ -402,7 +376,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       </section>
 
-      {/* 5. BENCHMARK QUERY TEST SUITE (Miles Values Style) */}
+      {/* 4. BENCHMARK QUERY TEST SUITE */}
       <section className="space-y-8 pb-12">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b border-white/10">
           <div>

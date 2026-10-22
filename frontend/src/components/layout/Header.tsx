@@ -30,10 +30,10 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <div>
             <span className="font-semibold font-display text-white text-sm sm:text-base tracking-tight uppercase block leading-none">
-              Semantic Retrieval
+              Semantic Video Retrieval
             </span>
             <span className="text-[10px] text-neutral-400 font-mono tracking-widest uppercase mt-1 block">
-              Multimodal &bull; 24-26
+              Spoken &bull; Visual &bull; Multimodal
             </span>
           </div>
         </div>

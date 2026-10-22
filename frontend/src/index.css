@@ -149,28 +149,7 @@ html.lenis body {
   opacity: 0;
 }
 
-/* 7. Continuous Restrained Ticker / Marquee Animation */
-@keyframes tickerSlide {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.ticker-track {
-  display: flex;
-  width: max-content;
-  animation: tickerSlide 35s linear infinite;
-  will-change: transform;
-}
-
-.ticker-track:hover {
-  animation-play-state: paused;
-}
-
-/* 8. Miles Aesthetic Utilities */
+/* 7. Miles Aesthetic Utilities */
 .border-hairline {
   border-color: rgba(255, 255, 255, 0.1);
 }
@@ -187,7 +166,7 @@ html.lenis body {
   background-color: #121212;
 }
 
-/* 9. Accessible Reduced Motion Overrides */
+/* 8. Accessible Reduced Motion Overrides */
 @media (prefers-reduced-motion: reduce) {
   .hero-reveal-1,
   .hero-reveal-2,
@@ -198,8 +177,5 @@ html.lenis body {
     animation-delay: 0s !important;
     transform: translateY(0%) !important;
     opacity: 1 !important;
-  }
-  .ticker-track {
-    animation: none !important;
   }
 }

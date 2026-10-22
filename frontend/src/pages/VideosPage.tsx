@@ -167,7 +167,7 @@ export const VideosPage: React.FC = () => {
             Media Archive
           </span>
           <h1 className="text-3xl sm:text-5xl font-semibold font-display uppercase tracking-tight text-white">
-            Library ( 24-26 )
+            Video Library
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 max-w-xl font-sans">
             Upload and manage long-form video assets. Automatic validation, audio demuxing, Faster-Whisper speech extraction, and CLIP visual frame indexing.
