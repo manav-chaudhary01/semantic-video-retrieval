@@ -15,7 +15,6 @@ import {
   FileText,
   Sparkles,
 } from 'lucide-react';
-import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
 import { EmptyState } from '../components/common/EmptyState';
@@ -160,18 +159,18 @@ export const VideosPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-6 border-b border-[#22271C]">
-        <div>
-          <span className="font-mono text-xs uppercase tracking-widest text-[#D2FF00] block mb-2">
-            Media Ingestion
+    <div className="space-y-12 max-w-7xl mx-auto">
+      {/* 1. Header (Miles Works Header Style) */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-6 border-b border-white/10">
+        <div className="space-y-2">
+          <span className="font-mono text-xs uppercase tracking-widest text-neutral-400 block">
+            Media Archive
           </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold font-display uppercase tracking-tight text-[#EBEEE0]">
-            Video Library
+          <h1 className="text-3xl sm:text-5xl font-semibold font-display uppercase tracking-tight text-white">
+            Library ( 24-26 )
           </h1>
-          <p className="text-xs sm:text-sm text-[#A5A89C] mt-1.5">
-            Upload videos for audio demuxing, Whisper speech transcription, and CLIP visual frame indexing.
+          <p className="text-xs sm:text-sm text-neutral-400 max-w-xl font-sans">
+            Upload and manage long-form video assets. Automatic validation, audio demuxing, Faster-Whisper speech extraction, and CLIP visual frame indexing.
           </p>
         </div>
         <Button
@@ -181,17 +180,28 @@ export const VideosPage: React.FC = () => {
           isLoading={isLoading}
           leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
         >
-          Refresh Library
+          Refresh Archive
         </Button>
       </div>
 
       {error && <ErrorAlert message={error} />}
 
-      {/* Upload Dropzone */}
-      <Card
-        title="Upload Video Asset"
-        subtitle="Supported formats: MP4, MKV, MOV, AVI, WebM (Max 500 MB)"
-      >
+      {/* 2. Upload Dropzone Banner (Miles Clean Minimalist Container) */}
+      <div className="bg-neutral-950 border border-white/10 rounded-2xl p-6 sm:p-8 space-y-6">
+        <div className="flex items-center justify-between pb-4 border-b border-white/10">
+          <div>
+            <h3 className="text-sm sm:text-base font-semibold font-display tracking-tight text-white uppercase">
+              Upload Video Asset
+            </h3>
+            <p className="text-xs text-neutral-400 mt-0.5">
+              Formats: MP4, MKV, MOV, AVI, WebM (Max 500 MB)
+            </p>
+          </div>
+          <span className="text-[11px] font-mono text-neutral-400 uppercase tracking-widest">
+            Automatic Ingestion
+          </span>
+        </div>
+
         <input
           type="file"
           ref={fileInputRef}
@@ -209,31 +219,31 @@ export const VideosPage: React.FC = () => {
             const file = e.dataTransfer.files?.[0];
             if (file) uploadFile(file);
           }}
-          className={`border-2 border-dashed rounded-2xl p-8 sm:p-10 text-center transition-all cursor-pointer relative overflow-hidden ${
+          className={`border border-dashed rounded-2xl p-8 sm:p-12 text-center transition-all cursor-pointer relative overflow-hidden ${
             isUploading
-              ? 'border-[#D2FF00] bg-[#12140F] cursor-wait'
-              : 'border-[#282C20] hover:border-[#D2FF00] bg-[#0B0C0A]'
+              ? 'border-white bg-neutral-900/60 cursor-wait'
+              : 'border-white/15 hover:border-white/40 bg-neutral-900/30 hover:bg-neutral-900/60'
           }`}
         >
-          <div className="w-12 h-12 rounded-xl bg-[#12140F] border border-[#282C20] text-[#D2FF00] flex items-center justify-center mx-auto mb-4">
-            <UploadCloud className="w-6 h-6 stroke-[1.8]" />
+          <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 text-white flex items-center justify-center mx-auto mb-4">
+            <UploadCloud className="w-5 h-5" />
           </div>
 
           {isUploading ? (
             <div className="space-y-2">
-              <h4 className="text-sm font-bold font-sans uppercase text-[#D2FF00] tracking-wide">
+              <h4 className="text-sm font-semibold font-sans uppercase text-white tracking-wide">
                 {uploadProgressMsg}
               </h4>
-              <p className="text-xs text-[#A5A89C] font-mono">
+              <p className="text-xs text-neutral-400 font-mono">
                 Streaming media chunks to server storage...
               </p>
             </div>
           ) : (
             <div className="space-y-2">
-              <h4 className="text-sm sm:text-base font-bold font-sans uppercase text-[#EBEEE0] tracking-wide">
-                Click to browse or drag and drop video
+              <h4 className="text-sm sm:text-base font-semibold font-sans uppercase text-white tracking-wide">
+                Click to browse or drag and drop video file
               </h4>
-              <p className="text-xs text-[#A5A89C] max-w-md mx-auto leading-relaxed">
+              <p className="text-xs text-neutral-400 max-w-md mx-auto leading-relaxed">
                 Automatic validation, FFprobe metadata extraction, Faster-Whisper transcription, and CLIP visual frame indexing.
               </p>
             </div>
@@ -242,21 +252,21 @@ export const VideosPage: React.FC = () => {
 
         {/* Active Processing Progress Bar */}
         {activeJob && (
-          <div className="mt-4 p-4 rounded-xl bg-[#0B0C0A] border border-[#282C20] space-y-2.5">
+          <div className="p-4 rounded-xl bg-neutral-900/80 border border-white/10 space-y-2.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-[#EBEEE0] flex items-center gap-2">
-                {activeJob.status === 'RUNNING' && <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#D2FF00]" />}
+              <span className="font-medium text-white flex items-center gap-2">
+                {activeJob.status === 'RUNNING' && <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />}
                 {activeJob.status === 'COMPLETED' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
                 {activeJob.status === 'FAILED' && <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />}
-                Stage: <span className="font-mono text-[#D2FF00] uppercase">{activeJob.stage}</span>
+                Pipeline Stage: <span className="font-mono text-white uppercase">{activeJob.stage}</span>
               </span>
-              <span className="font-mono text-[#D2FF00] font-bold">{Math.round(activeJob.progress)}%</span>
+              <span className="font-mono text-white font-bold">{Math.round(activeJob.progress)}%</span>
             </div>
 
-            <div className="w-full bg-[#12140F] rounded-full h-2 overflow-hidden border border-[#282C20]">
+            <div className="w-full bg-neutral-800 rounded-full h-1.5 overflow-hidden">
               <div
                 className={`h-full transition-all duration-300 ${
-                  activeJob.status === 'FAILED' ? 'bg-rose-500' : 'bg-[#D2FF00]'
+                  activeJob.status === 'FAILED' ? 'bg-rose-500' : 'bg-white'
                 }`}
                 style={{ width: `${activeJob.progress}%` }}
               />
@@ -267,16 +277,16 @@ export const VideosPage: React.FC = () => {
             )}
           </div>
         )}
-      </Card>
+      </div>
 
-      {/* Videos Catalog List */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <h3 className="text-base sm:text-lg font-bold font-sans uppercase tracking-tight text-[#EBEEE0]">
+      {/* 3. Videos Catalog Grid (Miles Works Index Style) */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+          <h3 className="text-base sm:text-lg font-semibold font-display uppercase tracking-tight text-white">
             Indexed Videos ({videos.length})
           </h3>
-          <span className="text-xs font-mono text-[#A5A89C]">
-            Database Archive
+          <span className="text-xs font-mono text-neutral-400">
+            Persistent Vector Index
           </span>
         </div>
 
@@ -298,12 +308,12 @@ export const VideosPage: React.FC = () => {
             {videos.map((vid) => (
               <div
                 key={vid.id}
-                className="bg-[#12140F] border border-[#22271C] hover:border-[#38402A] rounded-2xl p-5 sm:p-6 flex flex-col justify-between transition-all duration-200"
+                className="bg-neutral-950 border border-white/10 hover:border-white/30 rounded-2xl p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 group"
               >
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-[#0B0C0A] border border-[#282C20] flex items-center justify-center text-[#D2FF00] shrink-0">
-                      <FileVideo className="w-5 h-5 stroke-[1.8]" />
+                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white shrink-0 group-hover:scale-105 transition-transform">
+                      <FileVideo className="w-4 h-4" />
                     </div>
                     <div>
                       {vid.status === 'READY' && (
@@ -329,16 +339,16 @@ export const VideosPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <h4 className="text-sm font-bold uppercase text-[#EBEEE0] truncate tracking-wide" title={vid.original_filename}>
+                  <h4 className="text-base font-semibold font-display uppercase text-white truncate tracking-tight" title={vid.original_filename}>
                     {vid.original_filename}
                   </h4>
-                  <p className="text-[10px] font-mono text-[#A5A89C] mt-1 truncate">{vid.id}</p>
+                  <p className="text-[10px] font-mono text-neutral-400 mt-1 truncate">{vid.id}</p>
 
                   {/* Metadata Specs Grid */}
-                  <div className="grid grid-cols-2 gap-2 mt-4 text-xs text-[#A5A89C] bg-[#0B0C0A] p-3 rounded-xl border border-[#22271C] font-mono">
+                  <div className="grid grid-cols-2 gap-2 mt-4 text-xs text-neutral-300 bg-neutral-900/60 p-3.5 rounded-xl border border-white/5 font-mono">
                     <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-[#D2FF00]" />
-                      <span className="text-[#EBEEE0]">{formatDuration(vid.duration)}</span>
+                      <Clock className="w-3.5 h-3.5 text-neutral-400" />
+                      <span className="text-white">{formatDuration(vid.duration)}</span>
                     </div>
 
                     <div className="text-right">
@@ -358,7 +368,7 @@ export const VideosPage: React.FC = () => {
                           <Volume2 className="w-3.5 h-3.5" /> Audio
                         </span>
                       ) : (
-                        <span className="text-[#A5A89C] flex items-center gap-1 text-[11px]">
+                        <span className="text-neutral-400 flex items-center gap-1 text-[11px]">
                           <VolumeX className="w-3.5 h-3.5" /> Silent
                         </span>
                       )}
@@ -373,10 +383,10 @@ export const VideosPage: React.FC = () => {
                 </div>
 
                 {/* Card Actions */}
-                <div className="flex items-center justify-between pt-4 mt-5 border-t border-[#22271C]">
+                <div className="flex items-center justify-between pt-5 mt-6 border-t border-white/10">
                   <Button
                     size="sm"
-                    variant={vid.status === 'READY' ? 'lime' : 'outline'}
+                    variant={vid.status === 'READY' ? 'primary' : 'outline'}
                     onClick={() => setPreviewVideo(vid)}
                     disabled={vid.status !== 'READY'}
                     leftIcon={<Play className="w-3 h-3" />}
@@ -388,7 +398,7 @@ export const VideosPage: React.FC = () => {
                     size="sm"
                     variant="ghost"
                     onClick={() => handleDelete(vid.id, vid.original_filename)}
-                    className="text-rose-400 hover:text-rose-300 hover:bg-rose-950/50"
+                    className="text-neutral-400 hover:text-rose-400"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -399,14 +409,14 @@ export const VideosPage: React.FC = () => {
         )}
       </div>
 
-      {/* Video Playback & Transcript Modal */}
+      {/* 4. Video Playback & Transcript Modal (Miles Case Study Inspector Style) */}
       {previewVideo && (
-        <div className="fixed inset-0 z-50 bg-[#0B0C0A]/90 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#12140F] border border-[#282C20] rounded-2xl w-full max-w-5xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#22271C] bg-[#1A1E14]">
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex items-center justify-center p-4">
+          <div className="bg-neutral-950 border border-white/15 rounded-3xl w-full max-w-5xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-neutral-900/60">
               <div className="flex items-center gap-3 truncate">
-                <Film className="w-4 h-4 text-[#D2FF00]" />
-                <h3 className="text-sm font-bold uppercase font-sans text-[#EBEEE0] truncate">
+                <Film className="w-4 h-4 text-white" />
+                <h3 className="text-sm font-semibold uppercase font-display text-white truncate">
                   {previewVideo.original_filename}
                 </h3>
                 {previewTranscript && (
@@ -417,7 +427,7 @@ export const VideosPage: React.FC = () => {
               </div>
               <button
                 onClick={() => setPreviewVideo(null)}
-                className="p-1.5 rounded-lg text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#282C20] transition-colors cursor-pointer"
+                className="p-1.5 rounded-full text-neutral-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -430,7 +440,7 @@ export const VideosPage: React.FC = () => {
                   ref={videoRef}
                   controls
                   autoPlay
-                  className="w-full max-h-[50vh] lg:max-h-[60vh] rounded-xl shadow-lg"
+                  className="w-full max-h-[50vh] lg:max-h-[60vh] rounded-2xl shadow-lg border border-white/10"
                   src={api.getVideoStreamUrl(previewVideo.id)}
                 >
                   Your browser does not support HTML5 video.
@@ -438,18 +448,18 @@ export const VideosPage: React.FC = () => {
               </div>
 
               {/* Right Column: Indexed Transcripts & Segments */}
-              <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-[#22271C] bg-[#0B0C0A]/80 flex flex-col max-h-64 lg:max-h-[60vh]">
-                <div className="p-3.5 border-b border-[#22271C] bg-[#12140F] flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase font-sans text-[#EBEEE0]">
-                    <FileText className="w-3.5 h-3.5 text-[#D2FF00]" />
+              <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-white/10 bg-neutral-950 flex flex-col max-h-64 lg:max-h-[60vh]">
+                <div className="p-4 border-b border-white/10 bg-neutral-900/40 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-semibold uppercase font-sans text-white">
+                    <FileText className="w-3.5 h-3.5 text-white" />
                     <span>Indexed Dialogue</span>
                   </div>
-                  <span className="text-[10px] text-[#A5A89C] font-mono">Timestamped</span>
+                  <span className="text-[10px] text-neutral-400 font-mono">Timestamped</span>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
+                <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
                   {isLoadingTranscript ? (
-                    <div className="py-12 flex flex-col items-center justify-center text-[#A5A89C] gap-2">
+                    <div className="py-12 flex flex-col items-center justify-center text-neutral-400 gap-2">
                       <LoadingSpinner size="md" />
                       <span className="text-xs font-mono">Loading speech transcript...</span>
                     </div>
@@ -463,27 +473,27 @@ export const VideosPage: React.FC = () => {
                             videoRef.current.play();
                           }
                         }}
-                        className="group p-3 bg-[#12140F] hover:bg-[#1A1E14] border border-[#22271C] hover:border-[#D2FF00] rounded-xl transition-all cursor-pointer shadow-sm text-left"
+                        className="group p-3.5 bg-neutral-900/60 hover:bg-neutral-900 border border-white/10 hover:border-white/30 rounded-xl transition-all cursor-pointer shadow-sm text-left"
                       >
                         <div className="flex items-center justify-between gap-1 mb-1.5">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#0B0C0A] text-[#D2FF00] border border-[#282C20] text-[11px] font-mono group-hover:bg-[#1A1E14] transition-colors">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black text-white border border-white/15 text-[11px] font-mono group-hover:border-white/30 transition-colors">
                             <Clock className="w-2.5 h-2.5" />
                             {formatDuration(seg.start_time)} - {formatDuration(seg.end_time)}
                           </span>
                           {seg.index_reference !== undefined && seg.index_reference !== null && (
-                            <span className="text-[10px] text-[#A5A89C] font-mono flex items-center gap-1">
-                              <Sparkles className="w-2.5 h-2.5 text-[#D2FF00]" />
+                            <span className="text-[10px] text-neutral-400 font-mono flex items-center gap-1">
+                              <Sparkles className="w-2.5 h-2.5 text-white" />
                               FAISS #{seg.index_reference}
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-[#A5A89C] leading-relaxed group-hover:text-[#EBEEE0]">
+                        <p className="text-xs text-neutral-300 leading-relaxed group-hover:text-white">
                           {seg.text}
                         </p>
                       </div>
                     ))
                   ) : (
-                    <div className="py-12 text-center text-[#A5A89C] text-xs font-mono">
+                    <div className="py-12 text-center text-neutral-400 text-xs font-mono">
                       {previewVideo.has_audio
                         ? 'No speech detected or transcript empty.'
                         : 'Video has no audio track.'}
@@ -493,8 +503,8 @@ export const VideosPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="px-6 py-4 bg-[#1A1E14] border-t border-[#22271C] flex items-center justify-between text-xs text-[#A5A89C]">
-              <span className="font-mono text-[#EBEEE0]">
+            <div className="px-6 py-4 bg-neutral-900/60 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400">
+              <span className="font-mono text-white">
                 Duration: {formatDuration(previewVideo.duration)} &bull; {previewVideo.width}x{previewVideo.height}
               </span>
               <Button size="sm" variant="secondary" onClick={() => setPreviewVideo(null)}>
