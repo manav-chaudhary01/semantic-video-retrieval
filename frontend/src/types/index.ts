@@ -61,9 +61,13 @@ export interface SearchResult {
   start_time: number;
   end_time?: number;
   timestamp?: number;
+  peak_time?: number;
   text?: string;
   score: number;
   confidence_percent?: number;
+  text_score?: number;
+  visual_score?: number;
+  fused_score?: number;
   modality: 'text' | 'visual' | 'multimodal';
   preview_url?: string;
   stream_url?: string;
