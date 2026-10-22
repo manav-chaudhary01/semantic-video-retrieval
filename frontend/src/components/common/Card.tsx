@@ -6,7 +6,6 @@ export interface CardProps {
   title?: string;
   subtitle?: string;
   action?: React.ReactNode;
-  glowOnHover?: boolean;
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -15,13 +14,10 @@ export const Card: React.FC<CardProps> = ({
   title,
   subtitle,
   action,
-  glowOnHover = false,
 }) => {
   return (
     <div
-      className={`bg-[#12140F] border border-[#22271C] rounded-2xl p-5 sm:p-6 transition-all duration-200 relative ${
-        glowOnHover ? 'hover:border-[#38402A] hover:shadow-[0_0_25px_rgba(210,255,0,0.06)]' : ''
-      } ${className}`}
+      className={`bg-[#12140F] border border-[#22271C] rounded-2xl p-5 sm:p-6 transition-all duration-200 relative ${className}`}
     >
       {(title || action) && (
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#22271C]">

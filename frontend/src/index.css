@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "lenis/dist/lenis.css";
 
 @theme {
   --font-display: 'Syne', sans-serif;
@@ -21,6 +22,11 @@
   color-scheme: dark;
 }
 
+html {
+  background-color: #0B0C0A;
+  color: #EBEEE0;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -38,8 +44,8 @@ body {
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
@@ -48,53 +54,62 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: #282C20;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #3E4631;
 }
 
-/* Accessibility: respects reduced motion */
+/* Line Reveal Clipping Mask Utilities */
+.line-mask {
+  overflow: hidden;
+  display: block;
+}
+
+.line-inner {
+  display: block;
+  transform: translateY(105%);
+  opacity: 0;
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.9s ease;
+  will-change: transform, opacity;
+}
+
+.line-inner.revealed {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Editorial Fine Lines */
+.editorial-border-b {
+  border-bottom: 1px solid #22271C;
+}
+
+.editorial-border-t {
+  border-top: 1px solid #22271C;
+}
+
+.editorial-border-l {
+  border-left: 1px solid #22271C;
+}
+
+.editorial-border-r {
+  border-right: 1px solid #22271C;
+}
+
+/* Respect Reduced Motion Preferences */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
+    animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-}
 
-/* Editorial Grain Overlay (Subtle cinematic feel) */
-.editorial-grid {
-  background-size: 40px 40px;
-  background-image:
-    linear-gradient(to right, rgba(210, 255, 0, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(210, 255, 0, 0.03) 1px, transparent 1px);
-}
-
-.editorial-glow {
-  box-shadow: 0 0 35px -5px rgba(210, 255, 0, 0.18);
-}
-
-.editorial-glow-sm {
-  box-shadow: 0 0 15px -3px rgba(210, 255, 0, 0.25);
-}
-
-/* Stagger animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
+  .line-inner {
+    transform: none !important;
+    opacity: 1 !important;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
