@@ -21,7 +21,7 @@ Status Legend:
 | **Phase 2** | Video Upload, Validation, and Preprocessing | `VERIFIED` | 2026-10-21 |
 | **Phase 3** | Timestamped Transcription and Text Indexing | `VERIFIED` | 2026-10-21 |
 | **Phase 4** | Semantic Search MVP and Frontend Integration | `VERIFIED` | 2026-10-21 |
-| **Phase 5** | Visual Content Retrieval | `NOT_STARTED` | - |
+| **Phase 5** | Visual Content Retrieval | `VERIFIED` | 2026-10-22 |
 | **Phase 6** | Multimodal Fusion and Temporal Context | `NOT_STARTED` | - |
 | **Phase 7** | Evaluation, Benchmarking, and Optimization | `NOT_STARTED` | - |
 | **Phase 8** | Reliability, Security, Documentation, and Final Demo | `NOT_STARTED` | - |
@@ -80,11 +80,12 @@ Status Legend:
 - [x] Test persistence, video isolation, and FAISS candidate retrieval (`VERIFIED`)
 
 ### Phase 5: Visual Content Retrieval
-- [ ] Implement frame sampling via OpenCV/FFmpeg at configurable intervals (`NOT_STARTED`)
-- [ ] Integrate OpenCLIP (`ViT-B-32`) vision encoder (`NOT_STARTED`)
-- [ ] Build separate visual FAISS index and SQLite frame mapping (`NOT_STARTED`)
-- [ ] Implement cross-modal text-to-image search via `POST /api/search/visual` (`NOT_STARTED`)
-- [ ] Add frame preview thumbnails in search results (`NOT_STARTED`)
+- [x] Implement frame sampling via OpenCV at configurable intervals (2.0s default) (`VERIFIED`)
+- [x] Integrate OpenAI CLIP (`ViT-B-32` / `openai/clip-vit-base-patch32`) 512-d vision & text encoders (`VERIFIED`)
+- [x] Build separate visual FAISS index (`IndexFlatIP`, 512-d) and SQLite frame ID mapping (`VERIFIED`)
+- [x] Implement cross-modal text-to-frame search via `POST /api/search` with `modality="visual"` (`VERIFIED`)
+- [x] Serve frame snapshots via `GET /api/videos/{video_id}/frames/{frame_id}` with caching (`VERIFIED`)
+- [x] Add frame preview thumbnails in search results with synchronized seeking to original video timeline (`VERIFIED`)
 
 ### Phase 6: Multimodal Fusion and Temporal Context
 - [ ] Implement score calibration and multimodal score fusion ($\alpha \cdot \text{text} + \beta \cdot \text{visual}$) (`NOT_STARTED`)

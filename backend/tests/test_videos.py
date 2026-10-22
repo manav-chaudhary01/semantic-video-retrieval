@@ -94,10 +94,10 @@ async def test_upload_valid_video_and_lifecycle(sample_video_path):
         assert upload_data["job_id"] is not None
 
         # Poll until background processing completes
-        max_retries = 20
+        max_retries = 40
         completed = False
         for _ in range(max_retries):
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.5)
             status_res = await client.get(f"{settings.API_PREFIX}/videos/{video_id}/status")
             assert status_res.status_code == 200
             status_data = status_res.json()

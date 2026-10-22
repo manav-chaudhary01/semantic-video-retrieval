@@ -11,7 +11,8 @@ class SearchRequest(BaseModel):
 
 
 class SearchResultItem(BaseModel):
-    segment_id: str
+    segment_id: Optional[str] = None
+    frame_id: Optional[str] = None
     video_id: str
     video_title: str
     start_time: float
@@ -20,6 +21,7 @@ class SearchResultItem(BaseModel):
     score: float
     confidence_percent: float
     modality: str = "text"
+    preview_url: Optional[str] = None
     stream_url: str
 
 

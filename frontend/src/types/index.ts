@@ -4,9 +4,9 @@ export type JobStage =
   | 'VALIDATING'
   | 'EXTRACTING_AUDIO'
   | 'TRANSCRIBING'
+  | 'SAMPLING_FRAMES'
   | 'EMBEDDING'
   | 'INDEXING'
-  | 'SAMPLING_FRAMES'
   | 'COMPLETED'
   | 'FAILED';
 
@@ -99,4 +99,19 @@ export interface TranscriptResponse {
 export interface SegmentListResponse {
   total: number;
   items: TranscriptSegment[];
+}
+
+export interface VisualFrame {
+  id: string;
+  video_id: string;
+  timestamp: number;
+  frame_path?: string | null;
+  preview_url: string;
+  index_reference?: number | null;
+}
+
+export interface VisualFrameListResponse {
+  video_id: string;
+  total_frames: number;
+  frames: VisualFrame[];
 }

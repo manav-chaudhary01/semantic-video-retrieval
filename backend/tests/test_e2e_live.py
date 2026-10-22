@@ -150,3 +150,42 @@ def test_e2e_live_transcription_and_indexing_pipeline():
     assert filtered_search.json()["total_results"] == 1
     assert filtered_search.json()["results"][0]["video_id"] == video_id
     print("[E2E] Filtered Search: Confirmed video isolation filter.")
+
+    # 10. Check Extracted Frames & API (Phase 5 Visual Content Retrieval)
+    frames_res = client.get(f"/api/videos/{video_id}/frames")
+    assert frames_res.status_code == 200, f"Frames fetch failed: {frames_res.text}"
+    frames_data = frames_res.json()
+    assert frames_data["total_frames"] >= 1
+    frame0 = frames_data["frames"][0]
+    assert frame0["preview_url"].startswith(f"/api/videos/{video_id}/frames/")
+    print(f"[E2E] Visual Frames: Sampled {frames_data['total_frames']} frames for video {video_id}")
+
+    # Verify frame image can be served
+    frame_img_res = client.get(frame0["preview_url"])
+    assert frame_img_res.status_code == 200
+    assert frame_img_res.headers.get("content-type") == "image/jpeg"
+    assert len(frame_img_res.content) > 0
+    print(f"[E2E] Frame Image Serving: Verified JPEG delivery ({len(frame_img_res.content)} bytes)")
+
+    # 11. Check Visual Content Retrieval (Phase 5 CLIP Cross-Modal Search)
+    visual_search_res = client.post(
+        "/api/search",
+        json={
+            "query": "colorful test pattern display screen",
+            "modality": "visual",
+            "video_id": video_id,
+            "top_k": 3,
+        },
+    )
+    assert visual_search_res.status_code == 200, f"Visual search failed: {visual_search_res.text}"
+    visual_search_data = visual_search_res.json()
+    assert visual_search_data["total_results"] >= 1
+    top_visual = visual_search_data["results"][0]
+    assert top_visual["modality"] == "visual"
+    assert top_visual["frame_id"] is not None
+    assert top_visual["preview_url"] is not None
+    assert top_visual["start_time"] >= 0.0
+    print(
+        f"[E2E] Visual Search: Top visual match score={top_visual['score']:.4f} "
+        f"at timestamp {top_visual['start_time']}s (latency={visual_search_data['latency_ms']}ms)"
+    )

@@ -28,11 +28,18 @@ function formatDuration(seconds?: number | null): string {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-const EXAMPLE_QUERIES = [
+const TEXT_EXAMPLE_QUERIES = [
   'neural network backpropagation and weights',
   'gradient descent optimization algorithms',
   'convolutional neural networks for computer vision',
   'loss function and error minimization',
+];
+
+const VISUAL_EXAMPLE_QUERIES = [
+  'a person entering the room',
+  'lecture slide with mathematical diagrams',
+  'red car or bright colored vehicle',
+  'computer monitor displaying code',
 ];
 
 export const SearchPage: React.FC = () => {
@@ -144,6 +151,14 @@ export const SearchPage: React.FC = () => {
     );
   };
 
+  const getResultKey = (r: SearchResult): string => {
+    if (r.frame_id) return `frame-${r.frame_id}`;
+    if (r.segment_id) return `seg-${r.segment_id}`;
+    return `${r.video_id}-${r.start_time}`;
+  };
+
+  const currentSuggestions = modality === 'visual' ? VISUAL_EXAMPLE_QUERIES : TEXT_EXAMPLE_QUERIES;
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Search Header Hero */}
@@ -152,7 +167,7 @@ export const SearchPage: React.FC = () => {
           Semantic Video <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">Retrieval</span>
         </h1>
         <p className="mt-2 text-sm text-slate-400">
-          Search long video recordings using natural-language queries. Retrieve exact moments, timestamps, and direct playback.
+          Search video recordings using spoken dialogue or visual scene queries. Retrieve exact moments, thumbnails, and direct playback.
         </p>
       </div>
 
@@ -167,7 +182,11 @@ export const SearchPage: React.FC = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask anything, e.g. 'find where neural network backpropagation is explained'..."
+              placeholder={
+                modality === 'visual'
+                  ? "Describe visual scene, e.g. 'a person entering the room' or 'slide with mathematical diagrams'..."
+                  : "Search spoken dialogue, e.g. 'find where neural network backpropagation is explained'..."
+              }
               className="w-full bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none"
             />
             {query && (
@@ -195,7 +214,7 @@ export const SearchPage: React.FC = () => {
             <span className="text-slate-500 flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-indigo-400" /> Suggestions:
             </span>
-            {EXAMPLE_QUERIES.map((q, idx) => (
+            {currentSuggestions.map((q, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSearch(q)}
@@ -222,11 +241,14 @@ export const SearchPage: React.FC = () => {
               </button>
 
               <button
-                disabled
-                title="Available in Phase 5"
-                className="flex items-center gap-1.5 px-3 py-1 rounded-md text-slate-600 cursor-not-allowed opacity-60"
+                onClick={() => setModality('visual')}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-md transition-colors cursor-pointer font-medium ${
+                  modality === 'visual'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
               >
-                <Eye className="w-3.5 h-3.5" /> Visual (Phase 5)
+                <Eye className="w-3.5 h-3.5" /> Visual Content
               </button>
 
               <button
@@ -282,10 +304,10 @@ export const SearchPage: React.FC = () => {
                   className="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-lg px-2 py-1.5 focus:border-indigo-500 focus:outline-none"
                 >
                   <option value={0.0}>Any (&ge; 0%)</option>
+                  <option value={0.2}>&ge; 20%</option>
                   <option value={0.3}>&ge; 30%</option>
                   <option value={0.4}>&ge; 40%</option>
                   <option value={0.5}>&ge; 50%</option>
-                  <option value={0.6}>&ge; 60%</option>
                 </select>
               </div>
             </div>
@@ -310,9 +332,14 @@ export const SearchPage: React.FC = () => {
                   </span>
                 </div>
                 {activeResult && (
-                  <Badge variant="info">
-                    {formatDuration(activeResult.start_time)} - {formatDuration(activeResult.end_time)}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={activeResult.modality === 'visual' ? 'warning' : 'info'}>
+                      {activeResult.modality === 'visual' ? 'Visual Scene' : 'Spoken Dialogue'}
+                    </Badge>
+                    <Badge variant="neutral">
+                      {formatDuration(activeResult.start_time)} - {formatDuration(activeResult.end_time)}
+                    </Badge>
+                  </div>
                 )}
               </div>
 
@@ -336,7 +363,7 @@ export const SearchPage: React.FC = () => {
               </div>
 
               {activeResult && (
-                <div className="p-3.5 bg-slate-950/90 border-t border-slate-800 space-y-2">
+                <div className="p-3.5 bg-slate-950/90 border-t border-slate-800 space-y-3">
                   <div className="flex items-center justify-between text-xs text-slate-400">
                     <span className="font-mono text-indigo-300 flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5" />
@@ -356,9 +383,30 @@ export const SearchPage: React.FC = () => {
                       Replay Moment
                     </Button>
                   </div>
-                  <p className="text-xs text-slate-300 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80 leading-relaxed">
-                    &ldquo;{highlightMatchingTerms(activeResult.text ?? '', searchResponse.query)}&rdquo;
-                  </p>
+
+                  <div className="flex items-start gap-3">
+                    {activeResult.preview_url && (
+                      <div className="relative w-28 h-20 rounded-lg overflow-hidden bg-slate-900 border border-slate-700/80 shrink-0">
+                        <img
+                          src={activeResult.preview_url}
+                          alt="Visual scene snapshot"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-slate-300 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80 leading-relaxed">
+                        {activeResult.modality === 'visual' ? (
+                          <span className="flex items-center gap-1.5 text-amber-200">
+                            <Eye className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                            Retrieved visual frame snapshot at {formatDuration(activeResult.start_time)}
+                          </span>
+                        ) : (
+                          <span>&ldquo;{highlightMatchingTerms(activeResult.text ?? '', searchResponse.query)}&rdquo;</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
             </Card>
@@ -368,7 +416,7 @@ export const SearchPage: React.FC = () => {
           <div className="lg:col-span-5 space-y-3">
             <div className="flex items-center justify-between text-xs text-slate-400 px-1">
               <span className="font-semibold text-slate-200">
-                Found {searchResponse.total_results} relevant moment(s)
+                Found {searchResponse.total_results} {searchResponse.modality} moment(s)
               </span>
               <span className="font-mono text-[11px] text-slate-500">
                 FAISS Latency: {searchResponse.latency_ms}ms
@@ -377,12 +425,13 @@ export const SearchPage: React.FC = () => {
 
             <div className="space-y-2.5">
               {searchResponse.results.map((result, idx) => {
-                const isActive = activeResult?.segment_id === result.segment_id;
+                const resultKey = getResultKey(result);
+                const isActive = activeResult ? getResultKey(activeResult) === resultKey : false;
                 const scorePercent = result.confidence_percent ?? Math.round(result.score * 100);
 
                 return (
                   <div
-                    key={result.segment_id ?? idx}
+                    key={resultKey}
                     onClick={() => selectResultForPlayback(result)}
                     className={`p-3.5 rounded-xl border transition-all cursor-pointer text-left ${
                       isActive
@@ -419,9 +468,39 @@ export const SearchPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-300 line-clamp-3 leading-relaxed mb-3">
-                      {highlightMatchingTerms(result.text ?? '', searchResponse.query)}
-                    </p>
+                    <div className="flex items-start gap-3 mb-3">
+                      {result.preview_url && (
+                        <div className="relative w-24 h-16 rounded-md overflow-hidden bg-slate-950 border border-slate-700/80 shrink-0 group">
+                          <img
+                            src={result.preview_url}
+                            alt={`Scene at ${formatDuration(result.start_time)}`}
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            loading="lazy"
+                          />
+                          <span className="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-black/80 text-[9px] font-mono text-white">
+                            {formatDuration(result.start_time)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span
+                            className={`text-[10px] uppercase font-semibold px-1.5 py-0.2 rounded ${
+                              result.modality === 'visual'
+                                ? 'bg-amber-950/80 text-amber-300 border border-amber-800/60'
+                                : 'bg-indigo-950/80 text-indigo-300 border border-indigo-800/60'
+                            }`}
+                          >
+                            {result.modality === 'visual' ? 'Visual Scene' : 'Spoken Dialogue'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                          {result.modality === 'visual'
+                            ? `Visual match for "${searchResponse.query}"`
+                            : highlightMatchingTerms(result.text ?? '', searchResponse.query)}
+                        </p>
+                      </div>
+                    </div>
 
                     <div className="flex items-center justify-between pt-2 border-t border-slate-800/70 text-[11px]">
                       <span className="text-slate-500 font-mono">
@@ -453,7 +532,11 @@ export const SearchPage: React.FC = () => {
         <div className="max-w-xl mx-auto pt-6">
           <EmptyState
             title="No Matching Moments Found"
-            description={`No spoken dialogue matched "${searchResponse.query}" with the current filters. Try relaxing the search query or lowering the similarity threshold.`}
+            description={
+              searchResponse.modality === 'visual'
+                ? `No visual frames matched "${searchResponse.query}" with the current filters. Try describing the visual elements differently or lowering the similarity threshold.`
+                : `No spoken dialogue matched "${searchResponse.query}" with the current filters. Try relaxing the search query or lowering the similarity threshold.`
+            }
             icon={Search}
             action={
               threshold > 0 ? (
@@ -482,16 +565,20 @@ export const SearchPage: React.FC = () => {
             </div>
             <div>
               <h3 className="text-base font-semibold text-slate-200">
-                Phase 4: Semantic Search MVP Active
+                Phase 5: Visual & Dialogue Semantic Retrieval Active
               </h3>
               <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
-                Vector search with Sentence-Transformers (<code className="text-indigo-300">all-MiniLM-L6-v2</code>) and FAISS (<code className="text-indigo-300">IndexFlatIP</code>) is fully operational.
+                Dual cross-modal vector search with Sentence-Transformers (<code className="text-indigo-300">all-MiniLM-L6-v2</code>), OpenAI CLIP (<code className="text-indigo-300">ViT-B/32</code>), and dual FAISS indices is operational.
               </p>
             </div>
             <div className="flex flex-wrap justify-center gap-2 pt-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 text-slate-300 text-xs border border-slate-700/60">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                Dense Vector Embedding (384-d)
+                Spoken Dialogue Vector Index (384-d)
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 text-slate-300 text-xs border border-slate-700/60">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                Visual Scene CLIP Index (512-d)
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 text-slate-300 text-xs border border-slate-700/60">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
@@ -499,7 +586,7 @@ export const SearchPage: React.FC = () => {
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 text-slate-300 text-xs border border-slate-700/60">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                Exact Coordinate Timestamp Seeking
+                Direct Timeline Seeking & Previews
               </span>
             </div>
           </div>
