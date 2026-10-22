@@ -8,20 +8,27 @@ export interface LoadingSpinnerProps {
 }
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
-  label = 'Loading...',
+  label = 'Processing...',
   size = 'md',
   className = '',
 }) => {
   const sizeMap = {
     sm: 'w-4 h-4',
-    md: 'w-7 h-7',
-    lg: 'w-10 h-10',
+    md: 'w-8 h-8',
+    lg: 'w-12 h-12',
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center p-8 gap-3 text-slate-400 ${className}`}>
-      <Loader2 className={`${sizeMap[size]} animate-spin text-indigo-400`} />
-      {label && <p className="text-sm font-medium">{label}</p>}
+    <div className={`flex flex-col items-center justify-center p-10 gap-3.5 text-[#A5A89C] ${className}`}>
+      <div className="relative flex items-center justify-center">
+        <div className="absolute inset-0 rounded-full bg-[#D2FF00]/10 blur-md animate-pulse" />
+        <Loader2 className={`${sizeMap[size]} animate-spin text-[#D2FF00] relative z-10`} />
+      </div>
+      {label && (
+        <p className="text-xs font-mono font-medium tracking-wider uppercase text-[#EBEEE0]">
+          {label}
+        </p>
+      )}
     </div>
   );
 };

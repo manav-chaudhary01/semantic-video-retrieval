@@ -99,9 +99,7 @@ export const VideosPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Reset input
     e.target.value = '';
-
     await uploadFile(file);
   };
 
@@ -162,13 +160,19 @@ export const VideosPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-6 border-b border-[#22271C]">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">Video Ingestion & Catalog</h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Upload media for speech extraction, metadata probing, and semantic indexing.
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1A1E14] border border-[#282C20] text-xs font-mono text-[#D2FF00] mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D2FF00]" />
+            <span>MEDIA ASSET MANAGEMENT</span>
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-extrabold font-sans uppercase tracking-tight text-[#EBEEE0]">
+            Video Library
+          </h1>
+          <p className="text-xs sm:text-sm text-[#A5A89C] mt-1.5">
+            Upload media for speech extraction, metadata probing, keyframe sampling, and vector indexing.
           </p>
         </div>
         <Button
@@ -178,14 +182,17 @@ export const VideosPage: React.FC = () => {
           isLoading={isLoading}
           leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
         >
-          Refresh List
+          Refresh Library
         </Button>
       </div>
 
       {error && <ErrorAlert message={error} />}
 
       {/* Upload Dropzone */}
-      <Card title="Upload Video" subtitle="Supported formats: MP4, MKV, MOV, AVI, WebM (Max 500 MB)">
+      <Card
+        title="Upload Video Asset"
+        subtitle="Supported formats: MP4, MKV, MOV, AVI, WebM (Max 500 MB)"
+      >
         <input
           type="file"
           ref={fileInputRef}
@@ -203,28 +210,32 @@ export const VideosPage: React.FC = () => {
             const file = e.dataTransfer.files?.[0];
             if (file) uploadFile(file);
           }}
-          className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${
+          className={`border-2 border-dashed rounded-2xl p-8 sm:p-10 text-center transition-all cursor-pointer relative overflow-hidden ${
             isUploading
-              ? 'border-indigo-500 bg-indigo-950/20 cursor-wait'
-              : 'border-slate-800 hover:border-indigo-500/60 bg-slate-950/40 hover:bg-slate-900/40'
+              ? 'border-[#D2FF00] bg-[#1A1E14]/80 cursor-wait'
+              : 'border-[#282C20] hover:border-[#D2FF00]/60 bg-[#0B0C0A]/60 hover:bg-[#1A1E14]/40 hover:shadow-[0_0_25px_rgba(210,255,0,0.06)]'
           }`}
         >
-          <div className="w-12 h-12 rounded-full bg-indigo-950/80 border border-indigo-800/80 text-indigo-400 flex items-center justify-center mx-auto mb-3 shadow-md">
-            <UploadCloud className="w-6 h-6" />
+          <div className="w-14 h-14 rounded-2xl bg-[#1A1E14] border border-[#282C20] text-[#D2FF00] flex items-center justify-center mx-auto mb-4 shadow-[0_0_15px_rgba(210,255,0,0.1)]">
+            <UploadCloud className="w-7 h-7 stroke-[1.8]" />
           </div>
 
           {isUploading ? (
             <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-indigo-300">{uploadProgressMsg}</h4>
-              <p className="text-xs text-slate-400">Streaming chunks to persistent server storage...</p>
+              <h4 className="text-sm sm:text-base font-bold font-sans uppercase text-[#D2FF00] tracking-wide">
+                {uploadProgressMsg}
+              </h4>
+              <p className="text-xs text-[#A5A89C] font-mono">
+                Streaming media chunks to persistent server storage...
+              </p>
             </div>
           ) : (
-            <div className="space-y-1">
-              <h4 className="text-sm font-semibold text-slate-200">
-                Click to browse or drag and drop video file
+            <div className="space-y-2">
+              <h4 className="text-sm sm:text-base font-bold font-sans uppercase text-[#EBEEE0] tracking-wide">
+                Click to browse or drag and drop video
               </h4>
-              <p className="text-xs text-slate-500">
-                Automatic validation, FFprobe metadata extraction, and audio demuxing
+              <p className="text-xs text-[#A5A89C] max-w-md mx-auto leading-relaxed">
+                Automatic validation, FFprobe metadata extraction, Faster-Whisper transcription, and CLIP ViT keyframe indexing.
               </p>
             </div>
           )}
@@ -232,21 +243,21 @@ export const VideosPage: React.FC = () => {
 
         {/* Active Ingestion Progress Bar */}
         {activeJob && (
-          <div className="mt-4 p-4 rounded-xl bg-slate-950/70 border border-indigo-900/40 space-y-2">
+          <div className="mt-4 p-4 rounded-xl bg-[#0B0C0A] border border-[#282C20] space-y-2.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-300 flex items-center gap-1.5">
-                {activeJob.status === 'RUNNING' && <RefreshCw className="w-3.5 h-3.5 animate-spin text-indigo-400" />}
+              <span className="font-semibold text-[#EBEEE0] flex items-center gap-2">
+                {activeJob.status === 'RUNNING' && <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#D2FF00]" />}
                 {activeJob.status === 'COMPLETED' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
                 {activeJob.status === 'FAILED' && <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />}
-                Stage: <span className="font-mono text-indigo-300">{activeJob.stage}</span>
+                Pipeline Stage: <span className="font-mono text-[#D2FF00] uppercase">{activeJob.stage}</span>
               </span>
-              <span className="font-mono text-slate-400">{Math.round(activeJob.progress)}%</span>
+              <span className="font-mono text-[#D2FF00] font-bold">{Math.round(activeJob.progress)}%</span>
             </div>
 
-            <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+            <div className="w-full bg-[#1A1E14] rounded-full h-2 overflow-hidden border border-[#282C20]">
               <div
                 className={`h-full transition-all duration-300 ${
-                  activeJob.status === 'FAILED' ? 'bg-rose-500' : 'bg-gradient-to-r from-indigo-500 to-violet-500'
+                  activeJob.status === 'FAILED' ? 'bg-rose-500' : 'bg-[#D2FF00] shadow-[0_0_10px_#D2FF00]'
                 }`}
                 style={{ width: `${activeJob.progress}%` }}
               />
@@ -260,36 +271,44 @@ export const VideosPage: React.FC = () => {
       </Card>
 
       {/* Videos Catalog List */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-semibold text-slate-200">Stored Videos ({videos.length})</h3>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-base sm:text-lg font-bold font-sans uppercase tracking-tight text-[#EBEEE0]">
+            Stored Media ({videos.length})
+          </h3>
+          <span className="text-xs font-mono text-[#A5A89C]">
+            Persistent Library
+          </span>
         </div>
 
         {isLoading ? (
-          <LoadingSpinner label="Loading video catalog..." />
+          <LoadingSpinner label="Querying video catalog..." />
         ) : videos.length === 0 ? (
           <EmptyState
             title="No Videos Uploaded"
-            description="Upload your first long-form video above to begin preprocessing and indexing."
+            description="Upload your first long-form video above to begin preprocessing, speech extraction, and visual indexing."
             icon={Film}
             action={
-              <Button size="sm" onClick={() => fileInputRef.current?.click()} leftIcon={<UploadCloud className="w-3.5 h-3.5" />}>
+              <Button size="sm" variant="primary" onClick={() => fileInputRef.current?.click()} leftIcon={<UploadCloud className="w-3.5 h-3.5" />}>
                 Upload Video
               </Button>
             }
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {videos.map((vid) => (
-              <Card key={vid.id} className="flex flex-col justify-between hover:border-slate-700/80 transition-all">
+              <div
+                key={vid.id}
+                className="bg-[#12140F] border border-[#22271C] hover:border-[#38402A] rounded-2xl p-5 sm:p-6 flex flex-col justify-between transition-all duration-200 hover:shadow-[0_0_25px_rgba(210,255,0,0.06)]"
+              >
                 <div>
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-slate-800/80 border border-slate-700 flex items-center justify-center text-slate-300 shrink-0">
-                      <FileVideo className="w-5 h-5" />
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className="w-11 h-11 rounded-xl bg-[#1A1E14] border border-[#282C20] flex items-center justify-center text-[#D2FF00] shrink-0">
+                      <FileVideo className="w-5 h-5 stroke-[1.8]" />
                     </div>
                     <div>
                       {vid.status === 'READY' && (
-                        <Badge variant="success" size="sm" dot>
+                        <Badge variant="lime" size="sm" dot>
                           Ready
                         </Badge>
                       )}
@@ -311,16 +330,16 @@ export const VideosPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <h4 className="text-sm font-semibold text-slate-100 truncate" title={vid.original_filename}>
+                  <h4 className="text-sm font-bold uppercase text-[#EBEEE0] truncate tracking-wide" title={vid.original_filename}>
                     {vid.original_filename}
                   </h4>
-                  <p className="text-[11px] font-mono text-slate-500 mt-0.5 truncate">{vid.id}</p>
+                  <p className="text-[10px] font-mono text-[#A5A89C] mt-1 truncate">{vid.id}</p>
 
-                  {/* Metadata specs */}
-                  <div className="grid grid-cols-2 gap-2 mt-4 text-xs text-slate-400 bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/60 font-mono">
+                  {/* Metadata Specs Grid */}
+                  <div className="grid grid-cols-2 gap-2 mt-4 text-xs text-[#A5A89C] bg-[#0B0C0A] p-3 rounded-xl border border-[#22271C] font-mono">
                     <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-slate-500" />
-                      <span>{formatDuration(vid.duration)}</span>
+                      <Clock className="w-3.5 h-3.5 text-[#D2FF00]" />
+                      <span className="text-[#EBEEE0]">{formatDuration(vid.duration)}</span>
                     </div>
 
                     <div className="text-right">
@@ -337,28 +356,28 @@ export const VideosPage: React.FC = () => {
                     <div className="flex items-center justify-end gap-1">
                       {vid.has_audio ? (
                         <span className="text-emerald-400 flex items-center gap-1 text-[11px]">
-                          <Volume2 className="w-3 h-3" /> Audio
+                          <Volume2 className="w-3.5 h-3.5" /> Audio
                         </span>
                       ) : (
-                        <span className="text-slate-500 flex items-center gap-1 text-[11px]">
-                          <VolumeX className="w-3 h-3" /> Silent
+                        <span className="text-[#A5A89C] flex items-center gap-1 text-[11px]">
+                          <VolumeX className="w-3.5 h-3.5" /> Silent
                         </span>
                       )}
                     </div>
                   </div>
 
                   {vid.error_message && (
-                    <div className="mt-3 p-2 bg-rose-950/40 border border-rose-900/60 rounded text-xs text-rose-300 font-mono">
+                    <div className="mt-3 p-2.5 bg-rose-950/40 border border-rose-900/60 rounded-xl text-xs text-rose-300 font-mono">
                       {vid.error_message}
                     </div>
                   )}
                 </div>
 
-                {/* Card actions */}
-                <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-800/80">
+                {/* Card Actions */}
+                <div className="flex items-center justify-between pt-4 mt-5 border-t border-[#22271C]">
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant={vid.status === 'READY' ? 'lime' : 'outline'}
                     onClick={() => setPreviewVideo(vid)}
                     disabled={vid.status !== 'READY'}
                     leftIcon={<Play className="w-3 h-3" />}
@@ -372,10 +391,10 @@ export const VideosPage: React.FC = () => {
                     onClick={() => handleDelete(vid.id, vid.original_filename)}
                     className="text-rose-400 hover:text-rose-300 hover:bg-rose-950/50"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         )}
@@ -383,55 +402,57 @@ export const VideosPage: React.FC = () => {
 
       {/* Video Playback & Transcript Modal */}
       {previewVideo && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-5xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-950/60">
-              <div className="flex items-center gap-2 truncate">
-                <Film className="w-4 h-4 text-indigo-400" />
-                <h3 className="text-sm font-semibold text-slate-100 truncate">{previewVideo.original_filename}</h3>
+        <div className="fixed inset-0 z-50 bg-[#0B0C0A]/90 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#12140F] border border-[#282C20] rounded-3xl w-full max-w-5xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#22271C] bg-[#1A1E14]">
+              <div className="flex items-center gap-3 truncate">
+                <Film className="w-4 h-4 text-[#D2FF00]" />
+                <h3 className="text-sm font-bold uppercase font-sans text-[#EBEEE0] truncate">
+                  {previewVideo.original_filename}
+                </h3>
                 {previewTranscript && (
-                  <Badge variant="info">
+                  <Badge variant="lime" size="sm">
                     {previewTranscript.language?.toUpperCase() ?? 'AUDIO'} &bull; {previewTranscript.total_segments} Segment(s)
                   </Badge>
                 )}
               </div>
               <button
                 onClick={() => setPreviewVideo(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors cursor-pointer"
+                className="p-1.5 rounded-xl text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#282C20] transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-              {/* Left Column: Video player */}
-              <div className="flex-1 bg-black flex flex-col justify-center items-center p-3">
+              {/* Left Column: Video Player */}
+              <div className="flex-1 bg-black flex flex-col justify-center items-center p-4">
                 <video
                   ref={videoRef}
                   controls
                   autoPlay
-                  className="w-full max-h-[50vh] lg:max-h-[60vh] rounded-lg shadow-lg"
+                  className="w-full max-h-[50vh] lg:max-h-[60vh] rounded-2xl shadow-lg"
                   src={api.getVideoStreamUrl(previewVideo.id)}
                 >
-                  Your browser does not support the video tag.
+                  Your browser does not support HTML5 video.
                 </video>
               </div>
 
               {/* Right Column: Indexed Transcripts & Segments */}
-              <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-slate-800 bg-slate-950/50 flex flex-col max-h-64 lg:max-h-[60vh]">
-                <div className="p-3 border-b border-slate-800/80 bg-slate-900/50 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-200">
-                    <FileText className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>Indexed Transcript Segments</span>
+              <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-[#22271C] bg-[#0B0C0A]/80 flex flex-col max-h-64 lg:max-h-[60vh]">
+                <div className="p-3.5 border-b border-[#22271C] bg-[#12140F] flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase font-sans text-[#EBEEE0]">
+                    <FileText className="w-3.5 h-3.5 text-[#D2FF00]" />
+                    <span>Indexed Dialogue</span>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-mono">Phase 3 Semantic Index</span>
+                  <span className="text-[10px] text-[#A5A89C] font-mono">Phase 3 Index</span>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
                   {isLoadingTranscript ? (
-                    <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
+                    <div className="py-12 flex flex-col items-center justify-center text-[#A5A89C] gap-2">
                       <LoadingSpinner size="md" />
-                      <span className="text-xs">Loading speech transcript...</span>
+                      <span className="text-xs font-mono">Loading speech transcript...</span>
                     </div>
                   ) : previewTranscript && previewTranscript.segments.length > 0 ? (
                     previewTranscript.segments.map((seg, idx) => (
@@ -443,27 +464,27 @@ export const VideosPage: React.FC = () => {
                             videoRef.current.play();
                           }
                         }}
-                        className="group p-2.5 bg-slate-900/80 hover:bg-indigo-950/40 border border-slate-800/80 hover:border-indigo-600/50 rounded-xl transition-all cursor-pointer shadow-sm text-left"
+                        className="group p-3 bg-[#12140F] hover:bg-[#1A1E14] border border-[#22271C] hover:border-[#D2FF00]/50 rounded-xl transition-all cursor-pointer shadow-sm text-left"
                       >
                         <div className="flex items-center justify-between gap-1 mb-1.5">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-950/80 text-indigo-300 border border-indigo-800/50 text-[11px] font-mono group-hover:bg-indigo-900/90 transition-colors">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#1A1E14] text-[#D2FF00] border border-[#282C20] text-[11px] font-mono group-hover:bg-[#282C20] transition-colors">
                             <Clock className="w-2.5 h-2.5" />
                             {formatDuration(seg.start_time)} - {formatDuration(seg.end_time)}
                           </span>
                           {seg.index_reference !== undefined && seg.index_reference !== null && (
-                            <span className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
-                              <Sparkles className="w-2.5 h-2.5 text-indigo-400" />
+                            <span className="text-[10px] text-[#A5A89C] font-mono flex items-center gap-1">
+                              <Sparkles className="w-2.5 h-2.5 text-[#D2FF00]" />
                               FAISS #{seg.index_reference}
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-slate-300 leading-relaxed group-hover:text-slate-100">
+                        <p className="text-xs text-[#A5A89C] leading-relaxed group-hover:text-[#EBEEE0]">
                           {seg.text}
                         </p>
                       </div>
                     ))
                   ) : (
-                    <div className="py-12 text-center text-slate-500 text-xs">
+                    <div className="py-12 text-center text-[#A5A89C] text-xs font-mono">
                       {previewVideo.has_audio
                         ? 'No speech detected or transcript empty.'
                         : 'Video has no audio track.'}
@@ -473,8 +494,8 @@ export const VideosPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="px-5 py-3 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-              <span className="font-mono">
+            <div className="px-6 py-4 bg-[#1A1E14] border-t border-[#22271C] flex items-center justify-between text-xs text-[#A5A89C]">
+              <span className="font-mono text-[#EBEEE0]">
                 Duration: {formatDuration(previewVideo.duration)} &bull; {previewVideo.width}x{previewVideo.height}
               </span>
               <Button size="sm" variant="secondary" onClick={() => setPreviewVideo(null)}>

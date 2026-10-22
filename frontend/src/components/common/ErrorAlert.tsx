@@ -11,28 +11,32 @@ export interface ErrorAlertProps {
 
 export const ErrorAlert: React.FC<ErrorAlertProps> = ({
   message,
-  title = 'An error occurred',
+  title = 'System Alert',
   onRetry,
   className = '',
 }) => {
   return (
     <div
-      className={`flex items-start justify-between p-4 rounded-xl border border-rose-900/60 bg-rose-950/40 text-rose-200 ${className}`}
+      className={`flex items-start justify-between p-4 sm:p-5 rounded-2xl border border-rose-900/60 bg-rose-950/30 text-rose-200 backdrop-blur-sm ${className}`}
     >
-      <div className="flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+      <div className="flex items-start gap-3.5">
+        <div className="p-1.5 rounded-lg bg-rose-900/40 border border-rose-800/60 text-rose-400 shrink-0 mt-0.5">
+          <AlertCircle className="w-4 h-4" />
+        </div>
         <div>
-          <h5 className="text-sm font-semibold text-rose-100">{title}</h5>
-          <p className="text-xs text-rose-300/90 mt-0.5">{message}</p>
+          <h5 className="text-xs sm:text-sm font-bold tracking-wide uppercase text-rose-100 font-sans">
+            {title}
+          </h5>
+          <p className="text-xs text-rose-300/80 mt-1 font-mono leading-relaxed">{message}</p>
         </div>
       </div>
       {onRetry && (
         <Button
           size="sm"
           variant="outline"
-          className="border-rose-800 text-rose-200 hover:bg-rose-900/60 shrink-0 ml-3"
+          className="border-rose-800 text-rose-200 hover:border-rose-400 hover:text-white hover:bg-rose-950/80 shrink-0 ml-4"
           onClick={onRetry}
-          leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
+          leftIcon={<RotateCcw className="w-3 h-3" />}
         >
           Retry
         </Button>
