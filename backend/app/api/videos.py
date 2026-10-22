@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from backend.app.core.config import settings
 from backend.app.core.logging import logger
 from backend.app.core.exceptions import VideoNotFoundError, InvalidFileError
+from backend.app.core.security import validate_uuid, sanitize_filename, safe_resolve_path
+from backend.app.core.rate_limiter import RateLimitDependency
 from backend.app.db.session import get_db
 from backend.app.models.video import Video
 from backend.app.models.job import ProcessingJob
@@ -22,17 +24,20 @@ from backend.app.services.stream_service import create_media_stream_response
 
 router = APIRouter(tags=["Videos"])
 
+upload_rate_limiter = RateLimitDependency(settings.RATE_LIMIT_UPLOAD_PER_MIN, tier_name="upload")
+
 
 @router.post("", response_model=VideoUploadResponse, status_code=status.HTTP_202_ACCEPTED, summary="Upload a Video")
 async def upload_video(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
+    _rate_limit: None = Depends(upload_rate_limiter),
 ):
     """Uploads a video file, validates constraints, and enqueues an asynchronous processing job."""
     if not file.filename:
         raise InvalidFileError("Filename cannot be empty.")
 
-    filename = Path(file.filename).name
+    filename = sanitize_filename(file.filename)
     ext = Path(filename).suffix.lower()
 
     if ext not in settings.ALLOWED_EXTENSIONS:
@@ -45,7 +50,10 @@ async def upload_video(
     job_id = str(uuid.uuid4())
     storage_filename = f"{video_id}{ext}"
     relative_storage_path = Path("data/videos") / storage_filename
-    absolute_storage_path = settings.get_absolute_path(relative_storage_path)
+    absolute_storage_path = safe_resolve_path(
+        settings.get_absolute_path(relative_storage_path),
+        settings.get_absolute_path(settings.VIDEOS_DIR),
+    )
     absolute_storage_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Stream file to disk in chunks to avoid loading large files into RAM
@@ -132,28 +140,30 @@ def list_videos(
 @router.get("/{video_id}", response_model=VideoResponse, summary="Get Video Metadata")
 def get_video(video_id: str, db: Session = Depends(get_db)):
     """Retrieves comprehensive metadata for a specific video."""
-    video = db.query(Video).filter(Video.id == video_id).first()
+    safe_video_id = validate_uuid(video_id, "Video ID")
+    video = db.query(Video).filter(Video.id == safe_video_id).first()
     if not video:
-        raise VideoNotFoundError(video_id)
+        raise VideoNotFoundError(safe_video_id)
     return video
 
 
 @router.get("/{video_id}/status", response_model=JobStatusResponse, summary="Get Video Ingestion Status")
 def get_video_status(video_id: str, db: Session = Depends(get_db)):
     """Retrieves the active or latest ingestion job status for a given video."""
-    video = db.query(Video).filter(Video.id == video_id).first()
+    safe_video_id = validate_uuid(video_id, "Video ID")
+    video = db.query(Video).filter(Video.id == safe_video_id).first()
     if not video:
-        raise VideoNotFoundError(video_id)
+        raise VideoNotFoundError(safe_video_id)
 
     job = (
         db.query(ProcessingJob)
-        .filter(ProcessingJob.video_id == video_id)
+        .filter(ProcessingJob.video_id == safe_video_id)
         .order_by(ProcessingJob.started_at.desc())
         .first()
     )
     if not job:
         return JobStatusResponse(
-            video_id=video_id,
+            video_id=safe_video_id,
             job_id="",
             status=video.status,
             stage="UNKNOWN",
@@ -162,7 +172,7 @@ def get_video_status(video_id: str, db: Session = Depends(get_db)):
         )
 
     return JobStatusResponse(
-        video_id=video_id,
+        video_id=safe_video_id,
         job_id=job.id,
         status=job.status,
         stage=job.stage,
@@ -174,9 +184,10 @@ def get_video_status(video_id: str, db: Session = Depends(get_db)):
 @router.get("/{video_id}/stream", summary="Stream Video (HTTP Partial Content)")
 def stream_video(video_id: str, request: Request, db: Session = Depends(get_db)):
     """Streams video file supporting range requests for timeline seeking and scrubbing."""
-    video = db.query(Video).filter(Video.id == video_id).first()
+    safe_video_id = validate_uuid(video_id, "Video ID")
+    video = db.query(Video).filter(Video.id == safe_video_id).first()
     if not video:
-        raise VideoNotFoundError(video_id)
+        raise VideoNotFoundError(safe_video_id)
 
     video_path = settings.get_absolute_path(Path(video.storage_path))
     media_type = video.mime_type or "video/mp4"
@@ -186,13 +197,20 @@ def stream_video(video_id: str, request: Request, db: Session = Depends(get_db))
 @router.delete("/{video_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete Video")
 def delete_video(video_id: str, db: Session = Depends(get_db)):
     """Deletes video database record and disk artifacts."""
-    video = db.query(Video).filter(Video.id == video_id).first()
+    safe_video_id = validate_uuid(video_id, "Video ID")
+    video = db.query(Video).filter(Video.id == safe_video_id).first()
     if not video:
-        raise VideoNotFoundError(video_id)
+        raise VideoNotFoundError(safe_video_id)
 
-    # Delete video file and audio file
-    video_path = settings.get_absolute_path(Path(video.storage_path))
-    audio_path = settings.get_absolute_path(settings.AUDIO_DIR) / f"{video_id}.wav"
+    # Delete video file and audio file safely
+    video_path = safe_resolve_path(
+        settings.get_absolute_path(Path(video.storage_path)),
+        settings.get_absolute_path(settings.VIDEOS_DIR),
+    )
+    audio_path = safe_resolve_path(
+        settings.get_absolute_path(settings.AUDIO_DIR) / f"{safe_video_id}.wav",
+        settings.get_absolute_path(settings.AUDIO_DIR),
+    )
 
     if video_path.exists():
         video_path.unlink(missing_ok=True)
@@ -201,5 +219,5 @@ def delete_video(video_id: str, db: Session = Depends(get_db)):
 
     db.delete(video)
     db.commit()
-    logger.info(f"Deleted video {video_id} and its associated artifacts.")
+    logger.info(f"Deleted video {safe_video_id} and its associated artifacts.")
     return None

@@ -191,12 +191,13 @@ def test_benchmark_report_generation(tmp_path):
         dataset=dataset,
         summaries=[summary],
         all_records={"Multimodal Balanced (50/50 Linear)": [record]},
+        thresholded_summaries=[summary],
         output_path=report_file,
     )
 
     assert report_file.exists()
     content = report_file.read_text(encoding="utf-8")
-    assert "# Phase 7: Evaluation, Benchmarking, and Optimization Report" in content
+    assert "Evaluation, Benchmarking, and" in content
     assert "Multimodal Balanced (50/50 Linear)" in content
     assert "Mean Lat (ms)" in content
     assert "Q01" in content

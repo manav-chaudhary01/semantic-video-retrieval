@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from backend.app.core.exceptions import VideoNotFoundError
+from backend.app.core.security import validate_uuid
 from backend.app.db.session import get_db
 from backend.app.models.video import Video
 from backend.app.models.segment import TranscriptSegment
@@ -18,13 +19,14 @@ router = APIRouter(tags=["Transcripts"])
 @router.get("/{video_id}/transcript", response_model=TranscriptResponse, summary="Get Full Video Transcript")
 def get_video_transcript(video_id: str, db: Session = Depends(get_db)):
     """Retrieves all timestamped transcript segments for a given video."""
-    video = db.query(Video).filter(Video.id == video_id).first()
+    safe_video_id = validate_uuid(video_id, "Video ID")
+    video = db.query(Video).filter(Video.id == safe_video_id).first()
     if not video:
-        raise VideoNotFoundError(video_id)
+        raise VideoNotFoundError(safe_video_id)
 
     segments = (
         db.query(TranscriptSegment)
-        .filter(TranscriptSegment.video_id == video_id)
+        .filter(TranscriptSegment.video_id == safe_video_id)
         .order_by(TranscriptSegment.start_time.asc())
         .all()
     )
@@ -32,7 +34,7 @@ def get_video_transcript(video_id: str, db: Session = Depends(get_db)):
     detected_lang = segments[0].language if segments else None
 
     return TranscriptResponse(
-        video_id=video_id,
+        video_id=safe_video_id,
         language=detected_lang,
         total_segments=len(segments),
         segments=segments,
@@ -47,11 +49,12 @@ def list_video_segments(
     db: Session = Depends(get_db),
 ):
     """Retrieves paginated timestamped segments for a video."""
-    video = db.query(Video).filter(Video.id == video_id).first()
+    safe_video_id = validate_uuid(video_id, "Video ID")
+    video = db.query(Video).filter(Video.id == safe_video_id).first()
     if not video:
-        raise VideoNotFoundError(video_id)
+        raise VideoNotFoundError(safe_video_id)
 
-    query = db.query(TranscriptSegment).filter(TranscriptSegment.video_id == video_id)
+    query = db.query(TranscriptSegment).filter(TranscriptSegment.video_id == safe_video_id)
     total = query.count()
     segments = (
         query.order_by(TranscriptSegment.start_time.asc())
@@ -61,7 +64,7 @@ def list_video_segments(
     )
 
     return SegmentListResponse(
-        video_id=video_id,
+        video_id=safe_video_id,
         total=total,
         items=segments,
     )

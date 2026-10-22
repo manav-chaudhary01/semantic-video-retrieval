@@ -272,7 +272,10 @@ class TemporalConsolidator:
 
         # 8. Apply threshold filter if specified
         if threshold is not None:
-            fused_items = [item for item in fused_items if item.score >= threshold]
+            if fusion_method == "rrf":
+                fused_items = [item for item in fused_items if (item.confidence_percent / 100.0) >= threshold]
+            else:
+                fused_items = [item for item in fused_items if item.score >= threshold]
 
         return fused_items[:top_k]
 

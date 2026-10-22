@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 
 class SearchRequest(BaseModel):
-    query: str = Field(..., min_length=1, max_length=500, description="Natural-language search query")
+    query: str = Field(..., max_length=500, description="Natural-language search query")
     video_id: Optional[str] = Field(None, description="Optional video ID to filter search to a single video")
     top_k: int = Field(5, ge=1, le=50, description="Maximum number of results to return")
     modality: str = Field("text", description="Search modality: 'text', 'visual', or 'multimodal'")

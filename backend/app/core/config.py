@@ -29,6 +29,12 @@ class Settings(BaseSettings):
         "http://localhost:3000",
     ]
 
+    # Security & Rate Limiting
+    RATE_LIMIT_ENABLED: bool = True
+    RATE_LIMIT_DEFAULT_PER_MIN: int = 120
+    RATE_LIMIT_SEARCH_PER_MIN: int = 60
+    RATE_LIMIT_UPLOAD_PER_MIN: int = 15
+
     # Storage Paths (resolved relative to workspace root)
     BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent.parent
     DATA_DIR: Path = Field(default=Path("data"))
