@@ -1,11 +1,13 @@
 import React from 'react';
-import { Film, Search, Video, Activity } from 'lucide-react';
+import { Film, Search, Video, Activity, Sparkles } from 'lucide-react';
 import type { HealthResponse } from '../../types';
 import { Badge } from '../common/Badge';
 
+export type NavTab = 'home' | 'search' | 'videos' | 'health';
+
 export interface HeaderProps {
-  currentTab: 'search' | 'videos' | 'health';
-  onSelectTab: (tab: 'search' | 'videos' | 'health') => void;
+  currentTab: NavTab;
+  onSelectTab: (tab: NavTab) => void;
   health: HealthResponse | null;
   isHealthLoading: boolean;
 }
@@ -17,32 +19,51 @@ export const Header: React.FC<HeaderProps> = ({
   isHealthLoading,
 }) => {
   return (
-    <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <header className="border-b border-[#22271C] bg-[#0B0C0A]/85 backdrop-blur-xl sticky top-0 z-50 transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
         {/* Brand */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-md shadow-indigo-500/20">
-            <Film className="w-5 h-5 text-white" />
+        <div
+          onClick={() => onSelectTab('home')}
+          className="flex items-center gap-3 cursor-pointer group select-none"
+        >
+          <div className="w-10 h-10 rounded-xl bg-[#1A1E14] border border-[#282C20] group-hover:border-[#D2FF00]/60 flex items-center justify-center transition-all shadow-[0_0_15px_rgba(210,255,0,0.1)]">
+            <Film className="w-5 h-5 text-[#D2FF00] group-hover:scale-110 transition-transform" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-slate-100 text-lg tracking-tight">Semantic Video</span>
-              <span className="text-xs px-2 py-0.5 rounded font-mono font-medium bg-indigo-950 text-indigo-400 border border-indigo-800/60">
+              <span className="font-extrabold font-sans text-[#EBEEE0] text-base sm:text-lg tracking-tight uppercase">
+                Semantic Video
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold uppercase bg-[#D2FF00]/10 text-[#D2FF00] border border-[#D2FF00]/30 tracking-wider">
                 Deep Retrieval
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-normal">Multimodal Temporal Video Search</p>
+            <p className="text-[10px] text-[#A5A89C] font-mono tracking-wider uppercase">
+              Multimodal Temporal Engine
+            </p>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <nav className="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800/80">
+        <nav className="hidden md:flex items-center gap-1.5 bg-[#12140F] p-1.5 rounded-2xl border border-[#22271C]">
+          <button
+            onClick={() => onSelectTab('home')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wider uppercase font-sans transition-all cursor-pointer ${
+              currentTab === 'home'
+                ? 'bg-[#D2FF00] text-[#0B0C0A] shadow-[0_0_15px_rgba(210,255,0,0.3)]'
+                : 'text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#1A1E14]'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Overview</span>
+          </button>
+
           <button
             onClick={() => onSelectTab('search')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wider uppercase font-sans transition-all cursor-pointer ${
               currentTab === 'search'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                ? 'bg-[#D2FF00] text-[#0B0C0A] shadow-[0_0_15px_rgba(210,255,0,0.3)]'
+                : 'text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#1A1E14]'
             }`}
           >
             <Search className="w-3.5 h-3.5" />
@@ -51,22 +72,22 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={() => onSelectTab('videos')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wider uppercase font-sans transition-all cursor-pointer ${
               currentTab === 'videos'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                ? 'bg-[#D2FF00] text-[#0B0C0A] shadow-[0_0_15px_rgba(210,255,0,0.3)]'
+                : 'text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#1A1E14]'
             }`}
           >
             <Video className="w-3.5 h-3.5" />
-            <span>Videos</span>
+            <span>Library</span>
           </button>
 
           <button
             onClick={() => onSelectTab('health')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wider uppercase font-sans transition-all cursor-pointer ${
               currentTab === 'health'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                ? 'bg-[#D2FF00] text-[#0B0C0A] shadow-[0_0_15px_rgba(210,255,0,0.3)]'
+                : 'text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#1A1E14]'
             }`}
           >
             <Activity className="w-3.5 h-3.5" />
@@ -78,18 +99,46 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-2">
           {isHealthLoading ? (
             <Badge variant="neutral" size="sm" dot>
-              Connecting...
+              Connecting
             </Badge>
           ) : health?.status === 'healthy' ? (
-            <Badge variant="success" size="sm" dot>
-              Backend Online ({health.version})
+            <Badge variant="lime" size="sm" dot>
+              Online ({health.version})
             </Badge>
           ) : (
             <Badge variant="danger" size="sm" dot>
-              Backend Offline
+              Offline
             </Badge>
           )}
         </div>
+      </div>
+
+      {/* Mobile Nav Bar */}
+      <div className="md:hidden flex items-center justify-around border-t border-[#22271C] bg-[#12140F] py-2 px-2 text-[11px] font-mono">
+        <button
+          onClick={() => onSelectTab('home')}
+          className={`px-2.5 py-1 rounded-lg ${currentTab === 'home' ? 'text-[#D2FF00] font-bold' : 'text-[#A5A89C]'}`}
+        >
+          Overview
+        </button>
+        <button
+          onClick={() => onSelectTab('search')}
+          className={`px-2.5 py-1 rounded-lg ${currentTab === 'search' ? 'text-[#D2FF00] font-bold' : 'text-[#A5A89C]'}`}
+        >
+          Search
+        </button>
+        <button
+          onClick={() => onSelectTab('videos')}
+          className={`px-2.5 py-1 rounded-lg ${currentTab === 'videos' ? 'text-[#D2FF00] font-bold' : 'text-[#A5A89C]'}`}
+        >
+          Library
+        </button>
+        <button
+          onClick={() => onSelectTab('health')}
+          className={`px-2.5 py-1 rounded-lg ${currentTab === 'health' ? 'text-[#D2FF00] font-bold' : 'text-[#A5A89C]'}`}
+        >
+          Diagnostics
+        </button>
       </div>
     </header>
   );
