@@ -7,11 +7,11 @@ import {
   Eye,
   Film,
   Play,
-  Sparkles,
   Activity,
+  Check,
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
-import { gsap } from '../utils/lenis';
+import { gsap, ScrollTrigger } from '../utils/lenis';
 
 export interface HomePageProps {
   onNavigateToSearch: (initialQuery?: string, modality?: 'text' | 'visual' | 'multimodal') => void;
@@ -19,96 +19,75 @@ export interface HomePageProps {
   onNavigateToDiagnostics: () => void;
 }
 
-const MODALITY_EXPLANATIONS = [
-  {
-    step: '01',
-    title: 'Spoken Dialogue Retrieval',
-    tag: 'Faster-Whisper + MiniLM Embeddings',
-    description:
-      'Transcribes speech into timestamp-aligned sentences, embedding conversational meaning into a dense semantic vector space. Locates moments based on what was spoken, even when exact keywords differ.',
-    icon: Mic,
-    sampleQuery: 'neural network backpropagation and weights',
-    modality: 'text' as const,
-  },
-  {
-    step: '02',
-    title: 'Visual Scene Recognition',
-    tag: 'CLIP ViT-B/32 Zero-Shot Keyframes',
-    description:
-      'Extracts keyframes at 1-second intervals, encoding visual features into a multimodal embedding space. Identifies on-screen objects, slides, diagrams, and actions without requiring manual tags.',
-    icon: Eye,
-    sampleQuery: 'lecture slide with mathematical diagrams',
-    modality: 'visual' as const,
-  },
-  {
-    step: '03',
-    title: 'Multimodal Temporal Fusion',
-    tag: 'Cross-Modal Temporal Consolidation',
-    description:
-      'Combines spoken audio and visual evidence across a configurable sliding temporal window, computing calibrated score combinations or Reciprocal Rank Fusion (RRF) for joint audio-visual queries.',
-    icon: Layers,
-    sampleQuery: 'diagram explaining neural network backpropagation',
-    modality: 'multimodal' as const,
-  },
-];
-
-const CURATED_BENCHMARKS = [
+const BENCHMARK_QUERIES = [
   {
     text: 'neural network backpropagation and weights',
     modality: 'text' as const,
-    label: 'Speech',
+    type: 'Speech Dialogue',
   },
   {
     text: 'lecture slide with mathematical diagrams',
     modality: 'visual' as const,
-    label: 'Visual',
+    type: 'Visual Keyframe',
   },
   {
     text: 'diagram explaining neural network backpropagation',
     modality: 'multimodal' as const,
-    label: 'Multimodal',
+    type: 'Cross-Modal Fusion',
   },
   {
     text: 'a person entering the room',
     modality: 'visual' as const,
-    label: 'Visual',
+    type: 'Visual Keyframe',
   },
   {
     text: 'gradient descent optimization algorithms',
     modality: 'text' as const,
-    label: 'Speech',
+    type: 'Speech Dialogue',
   },
   {
     text: 'speaker pointing to loss function chart',
     modality: 'multimodal' as const,
-    label: 'Multimodal',
+    type: 'Cross-Modal Fusion',
   },
 ];
 
-const RETRIEVAL_STEPS = [
+const PIPELINE_STAGES = [
   {
-    number: '01',
-    name: 'Natural Query',
-    summary: 'Enter a descriptive natural-language request describing dialogue, an on-screen scene, or both.',
-    detail: 'Users are not restricted to exact keyword matching. Queries like "find where the speaker discusses gradient descent" or "show the slide with architecture diagrams" capture intent.',
+    index: '01',
+    label: 'Query Expression',
+    title: 'Natural-Language Intent',
+    subtitle: 'Search in human language without predefined keyword tags or exact filename matching.',
+    technical: 'Sentence tokenization & embedding',
+    details:
+      'Users describe spoken statements or visual elements. Queries like "find where the speaker discusses gradient descent" or "show the slide with architecture diagrams" capture semantic intent directly.',
   },
   {
-    number: '02',
-    name: 'Dual-Stream Vector Search',
-    summary: 'The query is embedded simultaneously into text and visual representation spaces.',
-    detail: 'Speech segments indexed with Faster-Whisper and visual keyframes indexed with CLIP ViT are searched independently in dual FAISS vector indices using inner-product cosine similarity.',
+    index: '02',
+    label: 'Dual Latent Spaces',
+    title: 'Speech & Visual Projection',
+    subtitle: 'Independent dense vector embeddings for audio transcription and keyframe scenes.',
+    technical: 'Faster-Whisper (384d) + CLIP ViT-B/32 (512d)',
+    details:
+      'Spoken audio is transcribed into timestamped segments and mapped to text vector space. Visual frames sampled at 1 FPS are mapped to visual-semantic space, enabling cross-modal cosine similarity search.',
   },
   {
-    number: '03',
-    name: 'Temporal Alignment & Scoring',
-    summary: 'Speech and visual candidates within a temporal window are aligned and scored.',
-    detail: 'A sliding temporal context window aggregates speech segments and adjacent keyframes, applying calibrated linear weighting (alpha/beta) or Reciprocal Rank Fusion (RRF).',
+    index: '03',
+    label: 'Temporal Consolidation',
+    title: 'Cross-Modal Alignment',
+    subtitle: 'Sliding temporal window consolidates audio and video evidence occurring together.',
+    technical: 'Calibrated Linear Weighting & RRF',
+    details:
+      'Candidate speech matches and nearby keyframe detections within a ±10 second window are paired. The system calculates joint relevance using calibrated linear fusion or Reciprocal Rank Fusion.',
   },
   {
-    number: '04',
-    name: 'Direct Timestamp Playback',
-    summary: 'Results return exact start and end timestamps for immediate, frame-accurate playback.',
-    detail: 'Selecting any result automatically seeks the player to the precise temporal interval with synchronized transcript text and frame preview.',
+    index: '04',
+    label: 'Playback Precision',
+    title: 'Direct Timestamp Jump',
+    subtitle: 'Frame-accurate temporal localization with synchronized dialogue transcript.',
+    technical: 'Zero Frame Drift & Byte-Range Streaming',
+    details:
+      'Selecting any ranked result commands the video player directly to the exact start timestamp, streaming partial media bytes instantly without waiting for full video download.',
   },
 ];
 
@@ -118,32 +97,90 @@ export const HomePage: React.FC<HomePageProps> = ({
   onNavigateToDiagnostics,
 }) => {
   const [heroQuery, setHeroQuery] = useState('');
-  const [activeStep, setActiveStep] = useState(0);
-  const heroRef = useRef<HTMLDivElement | null>(null);
+  const [activePipelineStage, setActivePipelineStage] = useState(0);
 
-  // Line reveals animation using GSAP on mount
+  const pinTrackRef = useRef<HTMLDivElement | null>(null);
+  const pinContentRef = useRef<HTMLDivElement | null>(null);
+  const modalitiesRef = useRef<HTMLDivElement | null>(null);
+  const benchmarksRef = useRef<HTMLDivElement | null>(null);
+
+  // 1. GSAP ScrollTrigger Pinned Pipeline Walkthrough
   useEffect(() => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
-      document.querySelectorAll('.line-inner').forEach((el) => {
-        el.classList.add('revealed');
-      });
+    // Only engage sticky scroll pinning on desktop / tablet
+    if (!pinTrackRef.current || !pinContentRef.current || window.innerWidth < 768) {
       return;
     }
 
-    const lines = heroRef.current?.querySelectorAll('.line-inner');
-    if (lines && lines.length > 0) {
-      gsap.fromTo(
-        lines,
-        { y: '105%', opacity: 0 },
-        {
-          y: '0%',
-          opacity: 1,
-          duration: 1.1,
-          stagger: 0.15,
-          ease: 'power3.out',
-        }
-      );
+    const trigger = ScrollTrigger.create({
+      trigger: pinTrackRef.current,
+      start: 'top 80px',
+      end: 'bottom bottom',
+      pin: pinContentRef.current,
+      pinSpacing: false,
+      scrub: 0.5,
+      onUpdate: (self) => {
+        const progress = self.progress;
+        const stageIndex = Math.min(3, Math.floor(progress * 4));
+        setActivePipelineStage(stageIndex);
+      },
+    });
+
+    const refreshTimer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 150);
+
+    return () => {
+      clearTimeout(refreshTimer);
+      trigger.kill();
+    };
+  }, []);
+
+  // 2. Scroll-Triggered Section Entrance Animations
+  useEffect(() => {
+    // Reveal Modality Cards on Scroll
+    if (modalitiesRef.current) {
+      const cards = modalitiesRef.current.querySelectorAll('.modality-card');
+      if (cards.length > 0) {
+        gsap.fromTo(
+          cards,
+          { y: 35, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: modalitiesRef.current,
+              start: 'top 82%',
+              once: true,
+            },
+          }
+        );
+      }
+    }
+
+    // Reveal Benchmark Query Cards on Scroll
+    if (benchmarksRef.current) {
+      const queryCards = benchmarksRef.current.querySelectorAll('.benchmark-card');
+      if (queryCards.length > 0) {
+        gsap.fromTo(
+          queryCards,
+          { y: 25, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.7,
+            stagger: 0.08,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: benchmarksRef.current,
+              start: 'top 85%',
+              once: true,
+            },
+          }
+        );
+      }
     }
   }, []);
 
@@ -157,238 +194,296 @@ export const HomePage: React.FC<HomePageProps> = ({
   };
 
   return (
-    <div className="space-y-24 sm:space-y-32 pb-20">
-      {/* 1. Hero Section — Bold Editorial Reveal */}
-      <section ref={heroRef} className="pt-8 sm:pt-16 md:pt-20 max-w-5xl mx-auto px-4">
-        {/* Editorial Subheader */}
-        <div className="line-mask mb-6">
-          <div className="line-inner font-mono text-xs uppercase tracking-widest text-[#D2FF00] flex items-center gap-2">
+    <div className="space-y-28 sm:space-y-36 pb-24">
+      {/* 1. HERO SECTION — Asymmetric, Sculpted Typography with Staggered Line Mask Reveals */}
+      <section className="pt-6 sm:pt-14 md:pt-20 max-w-6xl mx-auto px-4">
+        {/* Editorial Eyebrow */}
+        <div className="clip-mask mb-4">
+          <div className="hero-reveal-1 font-mono text-[11px] uppercase tracking-[0.2em] text-[#D2FF00] flex items-center gap-2">
             <span className="w-1.5 h-1.5 bg-[#D2FF00]" />
-            <span>Semantic Video Retrieval System</span>
+            <span>Deep Semantic Video Retrieval</span>
           </div>
         </div>
 
-        {/* Oversized Headline with Line Mask Reveals */}
-        <div className="space-y-1 mb-8">
-          <div className="line-mask">
-            <h1 className="line-inner text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-extrabold font-sans tracking-tight uppercase text-[#EBEEE0] leading-[0.9]">
+        {/* Oversized Headline Lines */}
+        <div className="space-y-1 sm:space-y-2">
+          <div className="clip-mask">
+            <h1 className="hero-reveal-2 font-display text-6xl sm:text-8xl md:text-9xl lg:text-[10rem] font-extrabold uppercase tracking-[-0.04em] text-[#EBEEE0] leading-[0.85]">
               Find the
             </h1>
           </div>
-          <div className="line-mask">
-            <h1 className="line-inner text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-extrabold font-sans tracking-tight uppercase text-[#D2FF00] leading-[0.9]">
+          <div className="clip-mask">
+            <h1 className="hero-reveal-3 font-display text-6xl sm:text-8xl md:text-9xl lg:text-[10rem] font-extrabold uppercase tracking-[-0.04em] text-[#D2FF00] leading-[0.85]">
               Moment.
             </h1>
           </div>
         </div>
 
-        {/* Human-Edited Editorial Subhead */}
-        <div className="line-mask mb-10 max-w-2xl">
-          <p className="line-inner text-base sm:text-lg md:text-xl text-[#A5A89C] leading-relaxed font-normal">
-            Search long-form video archives by spoken dialogue, on-screen visual scenes, or unified multimodal queries with frame-accurate timestamp playback.
+        {/* Asymmetrical Two-Column Manifesto Block */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mt-10 pt-8 border-t border-[#22271C]">
+          <div className="md:col-span-7 space-y-6">
+            <div className="clip-mask">
+              <p className="hero-reveal-4 font-sans text-base sm:text-lg md:text-xl text-[#EBEEE0] font-normal leading-relaxed">
+                Search long-form video archives by what was spoken, what appeared on screen, or both. Locate exact temporal intervals with frame-accurate direct playback.
+              </p>
+            </div>
+
+            {/* Focal Search Bar */}
+            <div className="clip-mask">
+              <form
+                onSubmit={handleHeroSubmit}
+                className="hero-reveal-5 bg-[#12140F] border border-[#282C20] focus-within:border-[#D2FF00] rounded-xl p-2 sm:p-2.5 flex items-center gap-2 transition-all shadow-xl"
+              >
+                <div className="pl-3 text-[#D2FF00]">
+                  <Search className="w-5 h-5 stroke-[2]" />
+                </div>
+                <input
+                  type="text"
+                  value={heroQuery}
+                  onChange={(e) => setHeroQuery(e.target.value)}
+                  placeholder="Enter query (e.g. 'neural network backpropagation explained')..."
+                  className="flex-1 bg-transparent text-sm sm:text-base text-[#EBEEE0] placeholder-[#A5A89C]/50 focus:outline-none px-2 py-2"
+                />
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="md"
+                  rightIcon={<ArrowRight className="w-4 h-4" />}
+                >
+                  Search
+                </Button>
+              </form>
+            </div>
+
+            {/* Curated Sample Badges */}
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="font-mono text-[10px] text-[#A5A89C] uppercase tracking-wider">
+                Sample queries:
+              </span>
+              {BENCHMARK_QUERIES.slice(0, 3).map((item, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => onNavigateToSearch(item.text, item.modality)}
+                  className="px-2.5 py-1 rounded bg-[#12140F] hover:bg-[#1A1E14] border border-[#282C20] hover:border-[#D2FF00] text-[#EBEEE0] hover:text-[#D2FF00] transition-colors cursor-pointer text-xs font-mono"
+                >
+                  &ldquo;{item.text}&rdquo;
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Column: Architectural Actions & Specs */}
+          <div className="md:col-span-5 flex flex-col justify-between border-t md:border-t-0 md:border-l border-[#22271C] pt-6 md:pt-0 md:pl-8 space-y-6">
+            <div className="space-y-4 font-mono text-xs text-[#A5A89C]">
+              <div className="flex justify-between pb-2 border-b border-[#22271C]">
+                <span>[01 // SPEECH]</span>
+                <span className="text-[#EBEEE0]">Faster-Whisper &bull; MiniLM</span>
+              </div>
+              <div className="flex justify-between pb-2 border-b border-[#22271C]">
+                <span>[02 // VISION]</span>
+                <span className="text-[#EBEEE0]">CLIP ViT-B/32 &bull; 1 FPS</span>
+              </div>
+              <div className="flex justify-between pb-2 border-b border-[#22271C]">
+                <span>[03 // FUSION]</span>
+                <span className="text-[#EBEEE0]">Temporal Consolidation</span>
+              </div>
+              <div className="flex justify-between">
+                <span>[04 // PLAYBACK]</span>
+                <span className="text-[#D2FF00]">Frame-Accurate Seek</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <Button
+                size="md"
+                variant="primary"
+                onClick={() => onNavigateToSearch()}
+                rightIcon={<ArrowRight className="w-4 h-4" />}
+                className="w-full sm:w-auto"
+              >
+                Search Studio
+              </Button>
+              <Button
+                size="md"
+                variant="secondary"
+                onClick={onNavigateToVideos}
+                leftIcon={<Film className="w-4 h-4 text-[#D2FF00]" />}
+                className="w-full sm:w-auto"
+              >
+                Video Library
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. PINNED / SCROLL-LINKED PIPELINE WALKTHROUGH SECTION */}
+      {/* Desktop / Tablet: Pinned 260vh Scroll Track */}
+      <section className="max-w-6xl mx-auto px-4">
+        <div className="pb-6 border-b border-[#22271C] flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <span className="font-mono text-xs uppercase tracking-widest text-[#D2FF00] block mb-2">
+              Pipeline Demonstration
+            </span>
+            <h2 className="font-display text-3xl sm:text-5xl font-extrabold uppercase tracking-tight text-[#EBEEE0]">
+              The Retrieval Sequence
+            </h2>
+          </div>
+          <p className="text-xs sm:text-sm text-[#A5A89C] max-w-sm">
+            Scroll down through this section to observe how candidate moments are discovered, aligned, and played.
           </p>
         </div>
 
-        {/* Focal Search Entry Input */}
-        <div className="line-mask mb-6 max-w-3xl">
-          <form
-            onSubmit={handleHeroSubmit}
-            className="line-inner bg-[#12140F] border border-[#282C20] focus-within:border-[#D2FF00] rounded-2xl p-2 sm:p-2.5 flex items-center gap-2 transition-all shadow-xl"
-          >
-            <div className="pl-3 text-[#D2FF00]">
-              <Search className="w-5 h-5 stroke-[2]" />
-            </div>
-            <input
-              type="text"
-              value={heroQuery}
-              onChange={(e) => setHeroQuery(e.target.value)}
-              placeholder="Search by speech or visual scene (e.g. 'neural network backpropagation')..."
-              className="flex-1 bg-transparent text-sm sm:text-base text-[#EBEEE0] placeholder-[#A5A89C]/50 focus:outline-none px-2 py-2"
-            />
-            <Button
-              type="submit"
-              variant="primary"
-              size="md"
-              rightIcon={<ArrowRight className="w-4 h-4" />}
-            >
-              Search
-            </Button>
-          </form>
-        </div>
+        {/* Pinned Desktop Track */}
+        <div ref={pinTrackRef} className="hidden md:block min-h-[260vh] relative pt-8">
+          <div ref={pinContentRef} className="h-[75vh] w-full flex items-center">
+            <div className="w-full grid grid-cols-12 gap-8 items-stretch bg-[#12140F] border border-[#282C20] rounded-2xl p-8 lg:p-12 shadow-2xl">
+              {/* Left Column: Stage Indicator & Editorial Narrative */}
+              <div className="col-span-5 flex flex-col justify-between border-r border-[#22271C] pr-8">
+                <div>
+                  <div className="flex items-center gap-2 mb-6">
+                    {PIPELINE_STAGES.map((s, idx) => (
+                      <button
+                        key={s.index}
+                        onClick={() => setActivePipelineStage(idx)}
+                        className={`px-2.5 py-1 rounded text-xs font-mono font-bold transition-all cursor-pointer ${
+                          activePipelineStage === idx
+                            ? 'bg-[#D2FF00] text-[#0B0C0A]'
+                            : 'bg-[#1A1E14] text-[#A5A89C] border border-[#282C20] hover:text-[#EBEEE0]'
+                        }`}
+                      >
+                        {s.index}
+                      </button>
+                    ))}
+                    <span className="text-xs font-mono text-[#A5A89C] ml-2">
+                      {PIPELINE_STAGES[activePipelineStage].label}
+                    </span>
+                  </div>
 
-        {/* Curated Prompt Badges */}
-        <div className="line-mask max-w-2xl">
-          <div className="line-inner flex flex-wrap items-center gap-2 text-xs">
-            <span className="font-mono text-[11px] text-[#A5A89C] uppercase tracking-wider flex items-center gap-1 mr-1">
-              <Sparkles className="w-3.5 h-3.5 text-[#D2FF00]" /> Explore:
-            </span>
-            {CURATED_BENCHMARKS.slice(0, 3).map((item, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => onNavigateToSearch(item.text, item.modality)}
-                className="px-3 py-1 rounded-lg bg-[#12140F] hover:bg-[#1A1E14] border border-[#282C20] hover:border-[#D2FF00] text-[#EBEEE0] hover:text-[#D2FF00] transition-colors cursor-pointer text-xs"
-              >
-                &ldquo;{item.text}&rdquo;
-              </button>
-            ))}
-          </div>
-        </div>
+                  <h3 className="font-display text-2xl lg:text-3xl font-extrabold uppercase text-[#EBEEE0] tracking-tight mb-3">
+                    {PIPELINE_STAGES[activePipelineStage].title}
+                  </h3>
 
-        {/* Primary Navigation Actions */}
-        <div className="flex flex-wrap items-center gap-4 mt-12 pt-8 border-t border-[#22271C]">
-          <Button
-            size="lg"
-            variant="primary"
-            onClick={() => onNavigateToSearch()}
-            rightIcon={<ArrowRight className="w-4 h-4" />}
-          >
-            Open Search Studio
-          </Button>
-          <Button
-            size="lg"
-            variant="secondary"
-            onClick={onNavigateToVideos}
-            leftIcon={<Film className="w-4 h-4 text-[#D2FF00]" />}
-          >
-            Video Library & Ingestion
-          </Button>
-        </div>
-      </section>
+                  <p className="font-sans text-sm text-[#EBEEE0] font-normal leading-relaxed mb-4">
+                    {PIPELINE_STAGES[activePipelineStage].subtitle}
+                  </p>
 
-      {/* 2. Product Walkthrough — The 4-Stage Semantic Retrieval Sequence */}
-      <section className="max-w-6xl mx-auto px-4">
-        <div className="border-t border-[#22271C] pt-12 pb-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-            <div className="max-w-2xl">
-              <span className="font-mono text-xs uppercase tracking-widest text-[#D2FF00] block mb-2">
-                System Architecture &bull; Sequence
-              </span>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-sans uppercase tracking-tight text-[#EBEEE0]">
-                How Semantic Retrieval Works
-              </h2>
-              <p className="text-sm text-[#A5A89C] mt-2 leading-relaxed">
-                From natural-language inquiry to frame-synchronized playback without manual video tagging.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onNavigateToDiagnostics}
-              leftIcon={<Activity className="w-3.5 h-3.5" />}
-            >
-              System Telemetry
-            </Button>
-          </div>
-
-          {/* Interactive Step Switcher */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            {RETRIEVAL_STEPS.map((step, idx) => (
-              <div
-                key={step.number}
-                onClick={() => setActiveStep(idx)}
-                className={`p-5 rounded-2xl border transition-all cursor-pointer text-left ${
-                  activeStep === idx
-                    ? 'bg-[#12140F] border-[#D2FF00] shadow-[0_0_20px_rgba(210,255,0,0.08)]'
-                    : 'bg-[#0B0C0A] border-[#22271C] hover:border-[#38402A] hover:bg-[#12140F]/60'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs font-bold text-[#D2FF00]">
-                    STEP {step.number}
-                  </span>
-                  {activeStep === idx && (
-                    <span className="w-2 h-2 rounded-full bg-[#D2FF00]" />
-                  )}
+                  <p className="font-sans text-xs text-[#A5A89C] leading-relaxed">
+                    {PIPELINE_STAGES[activePipelineStage].details}
+                  </p>
                 </div>
-                <h3 className="text-sm font-bold uppercase font-sans text-[#EBEEE0] mb-2">
-                  {step.name}
-                </h3>
-                <p className="text-xs text-[#A5A89C] leading-relaxed">
-                  {step.summary}
-                </p>
-              </div>
-            ))}
-          </div>
 
-          {/* Active Step Detailed Showcase Box */}
-          <div className="bg-[#12140F] border border-[#282C20] rounded-3xl p-6 sm:p-10">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-              <div className="space-y-4 max-w-xl">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#1A1E14] border border-[#282C20] text-xs font-mono text-[#D2FF00]">
-                  <span>STAGE {RETRIEVAL_STEPS[activeStep].number} IN DETAIL</span>
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-extrabold font-sans uppercase text-[#EBEEE0] tracking-tight">
-                  {RETRIEVAL_STEPS[activeStep].name}
-                </h3>
-                <p className="text-sm text-[#EBEEE0] leading-relaxed">
-                  {RETRIEVAL_STEPS[activeStep].detail}
-                </p>
-                <div className="pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onNavigateToSearch()}
-                    rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-                  >
-                    Test in Search Studio
-                  </Button>
+                <div className="pt-6 border-t border-[#22271C]">
+                  <div className="flex items-center justify-between font-mono text-[11px] text-[#A5A89C] mb-2">
+                    <span>PROGRESSION</span>
+                    <span className="text-[#D2FF00]">{Math.round((activePipelineStage + 1) * 25)}%</span>
+                  </div>
+                  <div className="w-full bg-[#0B0C0A] h-1.5 rounded-full overflow-hidden border border-[#282C20]">
+                    <div
+                      className="bg-[#D2FF00] h-full transition-all duration-300"
+                      style={{ width: `${(activePipelineStage + 1) * 25}%` }}
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Visual Graphic Representation of Active Step */}
-              <div className="w-full lg:w-96 bg-[#0B0C0A] border border-[#22271C] rounded-2xl p-6 space-y-4 font-mono text-xs">
-                {activeStep === 0 && (
-                  <div className="space-y-3">
-                    <span className="text-[#A5A89C] text-[11px] uppercase block">Input Stream:</span>
-                    <div className="p-3 bg-[#12140F] border border-[#282C20] rounded-xl text-[#D2FF00]">
+              {/* Right Column: Visual Stage Graphic Representation */}
+              <div className="col-span-7 pl-4 flex flex-col justify-center">
+                {activePipelineStage === 0 && (
+                  <div className="space-y-4 p-6 bg-[#0B0C0A] border border-[#22271C] rounded-xl font-mono">
+                    <span className="text-[11px] text-[#A5A89C] uppercase block tracking-wider">
+                      01 // Raw Natural Query
+                    </span>
+                    <div className="p-4 bg-[#12140F] border border-[#282C20] rounded-lg text-sm text-[#D2FF00]">
                       &ldquo;diagram explaining neural network backpropagation&rdquo;
                     </div>
-                    <p className="text-[11px] text-[#A5A89C]">
-                      Free-form text query tokenized and passed to text and vision projection heads.
-                    </p>
-                  </div>
-                )}
-                {activeStep === 1 && (
-                  <div className="space-y-3">
-                    <span className="text-[#A5A89C] text-[11px] uppercase block">Parallel Vector Embeddings:</span>
-                    <div className="p-2.5 bg-[#12140F] border border-[#282C20] rounded-lg">
-                      <span className="text-xs text-indigo-300 font-bold block mb-1">Speech Model:</span>
-                      <span className="text-[11px] text-[#A5A89C]">all-MiniLM-L6-v2 (384 dims)</span>
-                    </div>
-                    <div className="p-2.5 bg-[#12140F] border border-[#282C20] rounded-lg">
-                      <span className="text-xs text-amber-300 font-bold block mb-1">Visual Model:</span>
-                      <span className="text-[11px] text-[#A5A89C]">CLIP ViT-B/32 (512 dims)</span>
-                    </div>
-                  </div>
-                )}
-                {activeStep === 2 && (
-                  <div className="space-y-3">
-                    <span className="text-[#A5A89C] text-[11px] uppercase block">Temporal Overlap Fusion:</span>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-[11px]">
-                        <span className="text-[#A5A89C]">Speech Interval:</span>
-                        <span className="text-[#EBEEE0]">00:15 - 00:28</span>
+                    <div className="text-xs text-[#A5A89C] space-y-1.5 pt-2">
+                      <div className="flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-[#D2FF00]" />
+                        <span>No required keyword syntax or quotes</span>
                       </div>
-                      <div className="flex justify-between text-[11px]">
-                        <span className="text-[#A5A89C]">Visual Keyframe:</span>
-                        <span className="text-[#EBEEE0]">00:18 (Slide match)</span>
-                      </div>
-                      <div className="p-2 bg-[#1A1E14] border border-[#282C20] rounded text-[11px] text-[#D2FF00]">
-                        Overlap Confirmed &bull; Fused Score: 0.8842
+                      <div className="flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-[#D2FF00]" />
+                        <span>Dispatches to dual speech and visual indexing streams</span>
                       </div>
                     </div>
                   </div>
                 )}
-                {activeStep === 3 && (
-                  <div className="space-y-3">
-                    <span className="text-[#A5A89C] text-[11px] uppercase block">Direct Player Seek:</span>
-                    <div className="flex items-center gap-2 p-3 bg-[#12140F] border border-[#282C20] rounded-xl text-[#EBEEE0]">
-                      <Play className="w-4 h-4 text-[#D2FF00]" />
-                      <span>currentTime = 15.00s</span>
+
+                {activePipelineStage === 1 && (
+                  <div className="space-y-4 p-6 bg-[#0B0C0A] border border-[#22271C] rounded-xl font-mono">
+                    <span className="text-[11px] text-[#A5A89C] uppercase block tracking-wider">
+                      02 // Dual Latent Vector Embeddings
+                    </span>
+                    <div className="space-y-3">
+                      <div className="p-3 bg-[#12140F] border border-[#282C20] rounded-lg">
+                        <div className="flex justify-between items-center text-xs mb-1">
+                          <span className="text-indigo-300 font-bold">Speech Modality</span>
+                          <span className="text-[#A5A89C]">384 Dimensions</span>
+                        </div>
+                        <span className="text-[11px] text-[#A5A89C]">
+                          Faster-Whisper segment transcription &bull; all-MiniLM-L6-v2
+                        </span>
+                      </div>
+
+                      <div className="p-3 bg-[#12140F] border border-[#282C20] rounded-lg">
+                        <div className="flex justify-between items-center text-xs mb-1">
+                          <span className="text-amber-300 font-bold">Visual Modality</span>
+                          <span className="text-[#A5A89C]">512 Dimensions</span>
+                        </div>
+                        <span className="text-[11px] text-[#A5A89C]">
+                          1 FPS keyframe sampling &bull; OpenAI CLIP ViT-B/32
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-[11px] text-[#A5A89C]">
-                      HTML5 video streams directly from server with byte-range support and timestamp precision.
+                  </div>
+                )}
+
+                {activePipelineStage === 2 && (
+                  <div className="space-y-4 p-6 bg-[#0B0C0A] border border-[#22271C] rounded-xl font-mono">
+                    <span className="text-[11px] text-[#A5A89C] uppercase block tracking-wider">
+                      03 // Sliding Temporal Window Consolidation
+                    </span>
+                    <div className="space-y-2.5 text-xs">
+                      <div className="p-3 bg-[#12140F] border border-[#282C20] rounded-lg space-y-1.5">
+                        <div className="flex justify-between">
+                          <span className="text-[#A5A89C]">Speech Interval:</span>
+                          <span className="text-[#EBEEE0]">00:15 - 00:28</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[#A5A89C]">Visual Keyframe:</span>
+                          <span className="text-[#EBEEE0]">00:18.00 (Lecture slide)</span>
+                        </div>
+                        <div className="flex justify-between pt-1 border-t border-[#22271C]">
+                          <span className="text-[#A5A89C]">Temporal Overlap:</span>
+                          <span className="text-[#D2FF00] font-bold">&plusmn;10s window match</span>
+                        </div>
+                      </div>
+                      <div className="p-2.5 bg-[#1A1E14] border border-[#282C20] rounded text-[11px] text-[#D2FF00] flex justify-between">
+                        <span>Calibrated Linear / RRF Score:</span>
+                        <span className="font-bold">0.8842</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activePipelineStage === 3 && (
+                  <div className="space-y-4 p-6 bg-[#0B0C0A] border border-[#22271C] rounded-xl font-mono">
+                    <span className="text-[11px] text-[#A5A89C] uppercase block tracking-wider">
+                      04 // Frame-Accurate Direct Playback
+                    </span>
+                    <div className="p-3 bg-[#12140F] border border-[#282C20] rounded-lg flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2 text-[#EBEEE0]">
+                        <Play className="w-4 h-4 text-[#D2FF00]" />
+                        <span>currentTime = 15.00s</span>
+                      </div>
+                      <span className="text-[11px] text-[#D2FF00] bg-[#1A1E14] px-2 py-0.5 rounded border border-[#282C20]">
+                        PLAYING
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#A5A89C] leading-relaxed">
+                      Server streams partial media chunks via HTTP 206 Partial Content range requests directly to the HTML5 video element.
                     </p>
                   </div>
                 )}
@@ -396,103 +491,173 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Mobile Fallback: Clean Non-Pinned Stack */}
+        <div className="md:hidden space-y-6 pt-6">
+          {PIPELINE_STAGES.map((stage) => (
+            <div
+              key={stage.index}
+              className="p-5 bg-[#12140F] border border-[#22271C] rounded-xl space-y-3"
+            >
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="font-bold text-[#D2FF00]">STAGE {stage.index}</span>
+                <span className="text-[#A5A89C]">{stage.label}</span>
+              </div>
+              <h3 className="font-display text-lg font-bold uppercase text-[#EBEEE0]">
+                {stage.title}
+              </h3>
+              <p className="text-xs text-[#EBEEE0] leading-relaxed">
+                {stage.subtitle}
+              </p>
+              <p className="text-xs text-[#A5A89C] leading-relaxed">
+                {stage.details}
+              </p>
+            </div>
+          ))}
+        </div>
       </section>
 
-      {/* 3. Three Retrieval Modalities */}
-      <section className="max-w-6xl mx-auto px-4">
-        <div className="border-t border-[#22271C] pt-12 pb-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+      {/* 3. RETRIEVAL MODALITIES — Asymmetric Editorial Presentation with Scroll-Triggered Entrance */}
+      <section ref={modalitiesRef} className="max-w-6xl mx-auto px-4">
+        <div className="pb-8 border-b border-[#22271C] flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <span className="font-mono text-xs uppercase tracking-widest text-[#D2FF00] block mb-2">
+              Modalities
+            </span>
+            <h2 className="font-display text-3xl sm:text-5xl font-extrabold uppercase tracking-tight text-[#EBEEE0]">
+              Three Retrieval Modes
+            </h2>
+          </div>
+          <p className="text-xs sm:text-sm text-[#A5A89C] max-w-sm">
+            Select the specific modality that reflects how the target moment is preserved in your video recording.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
+          {/* 01 Speech */}
+          <div className="modality-card bg-[#12140F] border border-[#22271C] hover:border-[#38402A] rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-colors">
             <div>
-              <span className="font-mono text-xs uppercase tracking-widest text-[#D2FF00] block mb-2">
-                Retrieval Engines
-              </span>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-sans uppercase tracking-tight text-[#EBEEE0]">
-                Modalities Supported
-              </h2>
+              <div className="flex items-center justify-between mb-6 font-mono text-xs">
+                <span className="font-bold text-[#D2FF00]">01 //</span>
+                <span className="text-[#A5A89C] uppercase">Speech Dialogue</span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-[#0B0C0A] border border-[#282C20] flex items-center justify-center text-[#D2FF00] mb-5">
+                <Mic className="w-5 h-5 stroke-[1.8]" />
+              </div>
+              <h3 className="font-display text-lg font-bold uppercase text-[#EBEEE0] mb-2">
+                Dialogue Retrieval
+              </h3>
+              <p className="font-mono text-xs text-[#A5A89C] mb-4">
+                Faster-Whisper + all-MiniLM-L6-v2
+              </p>
+              <p className="text-xs text-[#A5A89C] leading-relaxed mb-6">
+                Transcribes speech into timestamp-aligned sentences, embedding conversational meaning into a dense semantic vector space. Locates moments based on what was spoken, even when exact keywords differ.
+              </p>
             </div>
-            <p className="text-sm text-[#A5A89C] max-w-md">
-              Choose the search modality that fits your query intent, or let multimodal fusion combine audio and vision.
-            </p>
+            <div className="pt-4 border-t border-[#22271C]">
+              <button
+                type="button"
+                onClick={() => onNavigateToSearch('neural network backpropagation and weights', 'text')}
+                className="w-full flex items-center justify-between text-xs font-mono text-[#EBEEE0] hover:text-[#D2FF00] transition-colors cursor-pointer group"
+              >
+                <span className="truncate mr-2">&ldquo;neural network weights&rdquo;</span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0 transform group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {MODALITY_EXPLANATIONS.map((card) => {
-              const Icon = card.icon;
-              return (
-                <div
-                  key={card.step}
-                  className="bg-[#12140F] border border-[#22271C] hover:border-[#38402A] rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <span className="font-mono text-xs font-bold text-[#D2FF00]">
-                        {card.step}
-                      </span>
-                      <span className="font-mono text-[10px] uppercase text-[#A5A89C] bg-[#1A1E14] px-2 py-0.5 rounded border border-[#282C20]">
-                        {card.modality}
-                      </span>
-                    </div>
+          {/* 02 Visual */}
+          <div className="modality-card bg-[#12140F] border border-[#22271C] hover:border-[#38402A] rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-colors">
+            <div>
+              <div className="flex items-center justify-between mb-6 font-mono text-xs">
+                <span className="font-bold text-[#D2FF00]">02 //</span>
+                <span className="text-[#A5A89C] uppercase">Visual Scene</span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-[#0B0C0A] border border-[#282C20] flex items-center justify-center text-[#D2FF00] mb-5">
+                <Eye className="w-5 h-5 stroke-[1.8]" />
+              </div>
+              <h3 className="font-display text-lg font-bold uppercase text-[#EBEEE0] mb-2">
+                Visual Recognition
+              </h3>
+              <p className="font-mono text-xs text-[#A5A89C] mb-4">
+                OpenAI CLIP ViT-B/32 Keyframes
+              </p>
+              <p className="text-xs text-[#A5A89C] leading-relaxed mb-6">
+                Extracts keyframes at 1-second intervals, encoding visual features into a multimodal embedding space. Identifies on-screen objects, slides, diagrams, and actions without requiring manual tags.
+              </p>
+            </div>
+            <div className="pt-4 border-t border-[#22271C]">
+              <button
+                type="button"
+                onClick={() => onNavigateToSearch('lecture slide with mathematical diagrams', 'visual')}
+                className="w-full flex items-center justify-between text-xs font-mono text-[#EBEEE0] hover:text-[#D2FF00] transition-colors cursor-pointer group"
+              >
+                <span className="truncate mr-2">&ldquo;slide with math diagrams&rdquo;</span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0 transform group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          </div>
 
-                    <div className="w-11 h-11 rounded-xl bg-[#1A1E14] border border-[#282C20] flex items-center justify-center text-[#D2FF00] mb-5">
-                      <Icon className="w-5 h-5 stroke-[1.8]" />
-                    </div>
-
-                    <h3 className="text-base sm:text-lg font-bold font-sans uppercase text-[#EBEEE0] tracking-tight mb-2">
-                      {card.title}
-                    </h3>
-                    <p className="text-xs font-mono text-[#A5A89C] mb-4">
-                      {card.tag}
-                    </p>
-                    <p className="text-xs text-[#A5A89C] leading-relaxed mb-6">
-                      {card.description}
-                    </p>
-                  </div>
-
-                  <div className="pt-4 border-t border-[#22271C]">
-                    <button
-                      type="button"
-                      onClick={() => onNavigateToSearch(card.sampleQuery, card.modality)}
-                      className="w-full flex items-center justify-between text-xs font-mono text-[#EBEEE0] hover:text-[#D2FF00] transition-colors cursor-pointer group"
-                    >
-                      <span className="truncate mr-2">&ldquo;{card.sampleQuery}&rdquo;</span>
-                      <ArrowRight className="w-3.5 h-3.5 shrink-0 transform group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+          {/* 03 Multimodal */}
+          <div className="modality-card bg-[#12140F] border border-[#22271C] hover:border-[#38402A] rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-colors">
+            <div>
+              <div className="flex items-center justify-between mb-6 font-mono text-xs">
+                <span className="font-bold text-[#D2FF00]">03 //</span>
+                <span className="text-[#A5A89C] uppercase">Cross-Modal Fusion</span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-[#0B0C0A] border border-[#282C20] flex items-center justify-center text-[#D2FF00] mb-5">
+                <Layers className="w-5 h-5 stroke-[1.8]" />
+              </div>
+              <h3 className="font-display text-lg font-bold uppercase text-[#EBEEE0] mb-2">
+                Multimodal Fusion
+              </h3>
+              <p className="font-mono text-xs text-[#A5A89C] mb-4">
+                Calibrated Linear &bull; RRF Ranking
+              </p>
+              <p className="text-xs text-[#A5A89C] leading-relaxed mb-6">
+                Combines spoken audio and visual evidence across a configurable sliding temporal window, computing calibrated score combinations or Reciprocal Rank Fusion (RRF) for joint audio-visual queries.
+              </p>
+            </div>
+            <div className="pt-4 border-t border-[#22271C]">
+              <button
+                type="button"
+                onClick={() => onNavigateToSearch('diagram explaining neural network backpropagation', 'multimodal')}
+                className="w-full flex items-center justify-between text-xs font-mono text-[#EBEEE0] hover:text-[#D2FF00] transition-colors cursor-pointer group"
+              >
+                <span className="truncate mr-2">&ldquo;diagram of backpropagation&rdquo;</span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0 transform group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 4. Interactive Benchmark Queries */}
-      <section className="max-w-6xl mx-auto px-4">
-        <div className="bg-[#12140F] border border-[#22271C] rounded-3xl p-6 sm:p-10">
-          <div className="max-w-2xl mb-8">
+      {/* 4. BENCHMARK QUERIES — Curated Test Grid with Scroll-Triggered Entrance */}
+      <section ref={benchmarksRef} className="max-w-6xl mx-auto px-4">
+        <div className="bg-[#12140F] border border-[#22271C] rounded-2xl p-6 sm:p-10">
+          <div className="max-w-xl mb-8">
             <span className="font-mono text-xs uppercase tracking-widest text-[#D2FF00] block mb-2">
-              Instant Testing
+              Verified Queries
             </span>
-            <h3 className="text-2xl sm:text-3xl font-extrabold font-sans uppercase tracking-tight text-[#EBEEE0]">
+            <h3 className="font-display text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-[#EBEEE0]">
               Sample Natural-Language Queries
             </h3>
             <p className="text-xs sm:text-sm text-[#A5A89C] mt-2">
-              Select any query below to run a live semantic retrieval against your indexed videos:
+              Click any query below to run a live retrieval against your indexed video collection:
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {CURATED_BENCHMARKS.map((q, idx) => (
+            {BENCHMARK_QUERIES.map((q, idx) => (
               <div
                 key={idx}
                 onClick={() => onNavigateToSearch(q.text, q.modality)}
-                className="group p-4 rounded-xl bg-[#0B0C0A] hover:bg-[#1A1E14] border border-[#22271C] hover:border-[#D2FF00] transition-all cursor-pointer flex items-center justify-between gap-3 text-left"
+                className="benchmark-card group p-4 rounded-xl bg-[#0B0C0A] hover:bg-[#1A1E14] border border-[#22271C] hover:border-[#D2FF00] transition-all cursor-pointer flex items-center justify-between gap-3 text-left"
               >
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-[#12140F] text-[#D2FF00] border border-[#282C20]">
-                      {q.label}
-                    </span>
-                  </div>
+                  <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-[#12140F] text-[#D2FF00] border border-[#282C20] inline-block mb-1.5">
+                    {q.type}
+                  </span>
                   <p className="text-xs font-medium text-[#EBEEE0] group-hover:text-[#D2FF00] transition-colors truncate">
                     &ldquo;{q.text}&rdquo;
                   </p>
@@ -504,14 +669,14 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       </section>
 
-      {/* 5. Direct Launch Call to Action */}
+      {/* 5. DIRECT CALL TO ACTION */}
       <section className="max-w-4xl mx-auto px-4 text-center">
-        <div className="p-8 sm:p-12 rounded-3xl bg-[#12140F] border border-[#22271C]">
-          <h3 className="text-3xl sm:text-4xl font-extrabold font-sans uppercase tracking-tight text-[#EBEEE0] mb-3">
-            Explore Your Video Archive
+        <div className="p-8 sm:p-12 rounded-2xl bg-[#12140F] border border-[#22271C] space-y-4">
+          <h3 className="font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-tight text-[#EBEEE0]">
+            Ready to Explore Your Archive?
           </h3>
-          <p className="text-xs sm:text-sm text-[#A5A89C] max-w-lg mx-auto mb-8 leading-relaxed">
-            Index long-form recordings with Whisper and CLIP, then locate the precise second where relevant speech and visuals occur.
+          <p className="text-xs sm:text-sm text-[#A5A89C] max-w-lg mx-auto leading-relaxed mb-6">
+            Upload recordings through the video ingestion bay, or query previously indexed material with exact timestamp playback.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Button
@@ -528,7 +693,15 @@ export const HomePage: React.FC<HomePageProps> = ({
               onClick={onNavigateToVideos}
               leftIcon={<Film className="w-4 h-4 text-[#D2FF00]" />}
             >
-              Video Ingestion
+              Video Ingestion Bay
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={onNavigateToDiagnostics}
+              leftIcon={<Activity className="w-4 h-4" />}
+            >
+              System Telemetry
             </Button>
           </div>
         </div>

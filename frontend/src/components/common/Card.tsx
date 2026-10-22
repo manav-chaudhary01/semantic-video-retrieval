@@ -23,7 +23,7 @@ export const Card: React.FC<CardProps> = ({
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#22271C]">
           <div>
             {title && (
-              <h3 className="text-sm sm:text-base font-bold font-sans tracking-tight text-[#EBEEE0] uppercase">
+              <h3 className="text-sm sm:text-base font-bold font-display tracking-tight text-[#EBEEE0] uppercase">
                 {title}
               </h3>
             )}
