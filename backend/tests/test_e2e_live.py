@@ -127,3 +127,26 @@ def test_e2e_live_transcription_and_indexing_pipeline():
             print("[E2E] Vite Proxy: Verified connecting to backend.")
     except Exception as e:
         print(f"[E2E] Note: Vite proxy check skipped ({e})")
+
+    # 9. Check Semantic Search Retrieval (Phase 4 Search MVP)
+    search_res = client.post(
+        "/api/search",
+        json={"query": "gradient descent and neural networks", "top_k": 3},
+    )
+    assert search_res.status_code == 200, f"Search failed: {search_res.text}"
+    search_data = search_res.json()
+    assert search_data["total_results"] >= 1
+    top_hit = search_data["results"][0]
+    assert top_hit["score"] > 0.40
+    assert "gradient descent" in top_hit["text"].lower() or "neural networks" in top_hit["text"].lower()
+    print(f"[E2E] Semantic Search: Top match score={top_hit['score']:.4f} ({top_hit['confidence_percent']}%), latency={search_data['latency_ms']}ms")
+
+    # Verify search with video_id filter
+    filtered_search = client.post(
+        "/api/search",
+        json={"query": "neural networks", "video_id": video_id, "top_k": 1},
+    )
+    assert filtered_search.status_code == 200
+    assert filtered_search.json()["total_results"] == 1
+    assert filtered_search.json()["results"][0]["video_id"] == video_id
+    print("[E2E] Filtered Search: Confirmed video isolation filter.")

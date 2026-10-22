@@ -10,6 +10,11 @@ from backend.app.schemas.transcript import (
     TranscriptResponse,
     SegmentListResponse,
 )
+from backend.app.schemas.search import (
+    SearchRequest,
+    SearchResultItem,
+    SearchResponse,
+)
 
 __all__ = [
     "HealthResponse",
@@ -20,4 +25,7 @@ __all__ = [
     "TranscriptSegmentResponse",
     "TranscriptResponse",
     "SegmentListResponse",
+    "SearchRequest",
+    "SearchResultItem",
+    "SearchResponse",
 ]

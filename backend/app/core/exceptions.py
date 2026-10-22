@@ -48,6 +48,20 @@ class ProcessingError(AppError):
         )
 
 
+class ValidationError(AppError):
+    def __init__(self, message: str):
+        super().__init__(
+            message=message,
+            status_code=status.HTTP_400_BAD_REQUEST,
+            details={"reason": message},
+        )
+
+
+class SearchError(AppError):
+    def __init__(self, message: str, status_code: int = status.HTTP_400_BAD_REQUEST, details: Optional[Dict[str, Any]] = None):
+        super().__init__(message=message, status_code=status_code, details=details)
+
+
 async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
     """Handles custom domain AppError exceptions."""
     logger.error(

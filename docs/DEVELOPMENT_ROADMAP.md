@@ -20,7 +20,7 @@ Status Legend:
 | **Phase 1** | Project Scaffolding and Application Foundation | `VERIFIED` | 2026-10-21 |
 | **Phase 2** | Video Upload, Validation, and Preprocessing | `VERIFIED` | 2026-10-21 |
 | **Phase 3** | Timestamped Transcription and Text Indexing | `VERIFIED` | 2026-10-21 |
-| **Phase 4** | Semantic Search MVP and Frontend Integration | `NOT_STARTED` | - |
+| **Phase 4** | Semantic Search MVP and Frontend Integration | `VERIFIED` | 2026-10-21 |
 | **Phase 5** | Visual Content Retrieval | `NOT_STARTED` | - |
 | **Phase 6** | Multimodal Fusion and Temporal Context | `NOT_STARTED` | - |
 | **Phase 7** | Evaluation, Benchmarking, and Optimization | `NOT_STARTED` | - |
@@ -72,12 +72,12 @@ Status Legend:
 - [x] Build interactive transcript and segment viewer in frontend video player modal (`VERIFIED`)
 
 ### Phase 4: Semantic Search MVP and Frontend Integration
-- [ ] Implement `POST /api/search` with natural-language text embedding and FAISS query (`NOT_STARTED`)
-- [ ] Retrieve, rank, and format segment results with similarity scores (`NOT_STARTED`)
-- [ ] Add video filtering and top-k controls (`NOT_STARTED`)
-- [ ] Build custom HTML5 video player seeking to original video timeline (`NOT_STARTED`)
-- [ ] Integrate search UI with video playback on result click (`NOT_STARTED`)
-- [ ] Test restart behavior and index persistence (`NOT_STARTED`)
+- [x] Implement `POST /api/search` with natural-language text embedding and FAISS query (`VERIFIED`)
+- [x] Retrieve, rank, and format segment results with similarity scores (`VERIFIED`)
+- [x] Add video filtering, threshold cutoffs, and top-k controls (`VERIFIED`)
+- [x] Build custom synchronized HTML5 video player seeking to original video timeline (`VERIFIED`)
+- [x] Integrate rich search UI with query suggestions, term highlighting, and direct playback (`VERIFIED`)
+- [x] Test persistence, video isolation, and FAISS candidate retrieval (`VERIFIED`)
 
 ### Phase 5: Visual Content Retrieval
 - [ ] Implement frame sampling via OpenCV/FFmpeg at configurable intervals (`NOT_STARTED`)

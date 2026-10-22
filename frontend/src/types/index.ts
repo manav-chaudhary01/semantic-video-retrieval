@@ -63,8 +63,10 @@ export interface SearchResult {
   timestamp?: number;
   text?: string;
   score: number;
+  confidence_percent?: number;
   modality: 'text' | 'visual' | 'multimodal';
   preview_url?: string;
+  stream_url?: string;
 }
 
 export interface SearchResponse {
@@ -72,6 +74,7 @@ export interface SearchResponse {
   modality: string;
   total_results: number;
   results: SearchResult[];
+  latency_ms?: number;
 }
 
 export interface TranscriptSegment {
