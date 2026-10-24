@@ -1,7 +1,6 @@
 import React from 'react';
 import { Film, Search, Video, Activity, Sparkles } from 'lucide-react';
 import type { HealthResponse } from '../../types';
-import { Badge } from '../common/Badge';
 
 export type NavTab = 'home' | 'search' | 'videos' | 'health';
 
@@ -19,38 +18,33 @@ export const Header: React.FC<HeaderProps> = ({
   isHealthLoading,
 }) => {
   return (
-    <header className="border-b border-[#22271C] bg-[#0B0C0A]/85 backdrop-blur-xl sticky top-0 z-50 transition-all">
+    <header className="border-b border-[#22271C] bg-[#0B0C0A]/90 backdrop-blur-xl sticky top-0 z-50 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
         {/* Brand */}
         <div
           onClick={() => onSelectTab('home')}
           className="flex items-center gap-3 cursor-pointer group select-none"
         >
-          <div className="w-10 h-10 rounded-xl bg-[#1A1E14] border border-[#282C20] group-hover:border-[#D2FF00]/60 flex items-center justify-center transition-all shadow-[0_0_15px_rgba(210,255,0,0.1)]">
-            <Film className="w-5 h-5 text-[#D2FF00] group-hover:scale-110 transition-transform" />
+          <div className="w-9 h-9 rounded-xl bg-[#12140F] border border-[#282C20] group-hover:border-[#D2FF00]/60 flex items-center justify-center transition-all">
+            <Film className="w-4 h-4 text-[#D2FF00] group-hover:scale-105 transition-transform" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold font-sans text-[#EBEEE0] text-base sm:text-lg tracking-tight uppercase">
-                Semantic Video
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold uppercase bg-[#D2FF00]/10 text-[#D2FF00] border border-[#D2FF00]/30 tracking-wider">
-                Deep Retrieval
-              </span>
-            </div>
-            <p className="text-[10px] text-[#A5A89C] font-mono tracking-wider uppercase">
-              Multimodal Temporal Engine
-            </p>
+            <span className="font-extrabold font-sans text-[#EBEEE0] text-sm sm:text-base tracking-tight uppercase block leading-none">
+              Semantic Video Retrieval
+            </span>
+            <span className="text-[10px] text-[#A5A89C] font-mono tracking-wider uppercase mt-1 block">
+              Spoken &bull; Visual &bull; Multimodal
+            </span>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <nav className="hidden md:flex items-center gap-1.5 bg-[#12140F] p-1.5 rounded-2xl border border-[#22271C]">
+        <nav className="hidden md:flex items-center gap-1 bg-[#12140F] p-1.5 rounded-xl border border-[#22271C]">
           <button
             onClick={() => onSelectTab('home')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wider uppercase font-sans transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wider uppercase font-sans transition-all cursor-pointer ${
               currentTab === 'home'
-                ? 'bg-[#D2FF00] text-[#0B0C0A] shadow-[0_0_15px_rgba(210,255,0,0.3)]'
+                ? 'bg-[#D2FF00] text-[#0B0C0A]'
                 : 'text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#1A1E14]'
             }`}
           >
@@ -60,9 +54,9 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={() => onSelectTab('search')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wider uppercase font-sans transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wider uppercase font-sans transition-all cursor-pointer ${
               currentTab === 'search'
-                ? 'bg-[#D2FF00] text-[#0B0C0A] shadow-[0_0_15px_rgba(210,255,0,0.3)]'
+                ? 'bg-[#D2FF00] text-[#0B0C0A]'
                 : 'text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#1A1E14]'
             }`}
           >
@@ -72,9 +66,9 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={() => onSelectTab('videos')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wider uppercase font-sans transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wider uppercase font-sans transition-all cursor-pointer ${
               currentTab === 'videos'
-                ? 'bg-[#D2FF00] text-[#0B0C0A] shadow-[0_0_15px_rgba(210,255,0,0.3)]'
+                ? 'bg-[#D2FF00] text-[#0B0C0A]'
                 : 'text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#1A1E14]'
             }`}
           >
@@ -84,9 +78,9 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={() => onSelectTab('health')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wider uppercase font-sans transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wider uppercase font-sans transition-all cursor-pointer ${
               currentTab === 'health'
-                ? 'bg-[#D2FF00] text-[#0B0C0A] shadow-[0_0_15px_rgba(210,255,0,0.3)]'
+                ? 'bg-[#D2FF00] text-[#0B0C0A]'
                 : 'text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#1A1E14]'
             }`}
           >
@@ -96,46 +90,49 @@ export const Header: React.FC<HeaderProps> = ({
         </nav>
 
         {/* Backend Status indicator */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-xs font-mono">
           {isHealthLoading ? (
-            <Badge variant="neutral" size="sm" dot>
+            <span className="inline-flex items-center gap-1.5 text-[#A5A89C] bg-[#12140F] border border-[#22271C] px-2.5 py-1 rounded-md">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#A5A89C] animate-pulse" />
               Connecting
-            </Badge>
+            </span>
           ) : health?.status === 'healthy' ? (
-            <Badge variant="lime" size="sm" dot>
-              Online ({health.version})
-            </Badge>
+            <span className="inline-flex items-center gap-1.5 text-[#D2FF00] bg-[#12140F] border border-[#282C20] px-2.5 py-1 rounded-md">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D2FF00]" />
+              Online
+            </span>
           ) : (
-            <Badge variant="danger" size="sm" dot>
+            <span className="inline-flex items-center gap-1.5 text-rose-400 bg-rose-950/40 border border-rose-900/60 px-2.5 py-1 rounded-md">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
               Offline
-            </Badge>
+            </span>
           )}
         </div>
       </div>
 
-      {/* Mobile Nav Bar */}
+      {/* Mobile Navigation */}
       <div className="md:hidden flex items-center justify-around border-t border-[#22271C] bg-[#12140F] py-2 px-2 text-[11px] font-mono">
         <button
           onClick={() => onSelectTab('home')}
-          className={`px-2.5 py-1 rounded-lg ${currentTab === 'home' ? 'text-[#D2FF00] font-bold' : 'text-[#A5A89C]'}`}
+          className={`px-3 py-1 rounded ${currentTab === 'home' ? 'text-[#D2FF00] font-bold' : 'text-[#A5A89C]'}`}
         >
           Overview
         </button>
         <button
           onClick={() => onSelectTab('search')}
-          className={`px-2.5 py-1 rounded-lg ${currentTab === 'search' ? 'text-[#D2FF00] font-bold' : 'text-[#A5A89C]'}`}
+          className={`px-3 py-1 rounded ${currentTab === 'search' ? 'text-[#D2FF00] font-bold' : 'text-[#A5A89C]'}`}
         >
           Search
         </button>
         <button
           onClick={() => onSelectTab('videos')}
-          className={`px-2.5 py-1 rounded-lg ${currentTab === 'videos' ? 'text-[#D2FF00] font-bold' : 'text-[#A5A89C]'}`}
+          className={`px-3 py-1 rounded ${currentTab === 'videos' ? 'text-[#D2FF00] font-bold' : 'text-[#A5A89C]'}`}
         >
           Library
         </button>
         <button
           onClick={() => onSelectTab('health')}
-          className={`px-2.5 py-1 rounded-lg ${currentTab === 'health' ? 'text-[#D2FF00] font-bold' : 'text-[#A5A89C]'}`}
+          className={`px-3 py-1 rounded ${currentTab === 'health' ? 'text-[#D2FF00] font-bold' : 'text-[#A5A89C]'}`}
         >
           Diagnostics
         </button>

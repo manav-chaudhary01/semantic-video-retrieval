@@ -110,7 +110,7 @@ export const VideosPage: React.FC = () => {
 
     try {
       const res = await api.uploadVideo(file);
-      setUploadProgressMsg(`Uploaded. Ingestion in progress...`);
+      setUploadProgressMsg(`Uploaded. Processing pipeline running...`);
       setActiveJob({
         video_id: res.video_id,
         job_id: res.job_id,
@@ -164,15 +164,14 @@ export const VideosPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-6 border-b border-[#22271C]">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1A1E14] border border-[#282C20] text-xs font-mono text-[#D2FF00] mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D2FF00]" />
-            <span>MEDIA ASSET MANAGEMENT</span>
-          </div>
+          <span className="font-mono text-xs uppercase tracking-widest text-[#D2FF00] block mb-2">
+            Media Ingestion
+          </span>
           <h1 className="text-3xl sm:text-5xl font-extrabold font-sans uppercase tracking-tight text-[#EBEEE0]">
             Video Library
           </h1>
           <p className="text-xs sm:text-sm text-[#A5A89C] mt-1.5">
-            Upload media for speech extraction, metadata probing, keyframe sampling, and vector indexing.
+            Upload videos for audio demuxing, Whisper speech transcription, and CLIP visual frame indexing.
           </p>
         </div>
         <Button
@@ -212,21 +211,21 @@ export const VideosPage: React.FC = () => {
           }}
           className={`border-2 border-dashed rounded-2xl p-8 sm:p-10 text-center transition-all cursor-pointer relative overflow-hidden ${
             isUploading
-              ? 'border-[#D2FF00] bg-[#1A1E14]/80 cursor-wait'
-              : 'border-[#282C20] hover:border-[#D2FF00]/60 bg-[#0B0C0A]/60 hover:bg-[#1A1E14]/40 hover:shadow-[0_0_25px_rgba(210,255,0,0.06)]'
+              ? 'border-[#D2FF00] bg-[#12140F] cursor-wait'
+              : 'border-[#282C20] hover:border-[#D2FF00] bg-[#0B0C0A]'
           }`}
         >
-          <div className="w-14 h-14 rounded-2xl bg-[#1A1E14] border border-[#282C20] text-[#D2FF00] flex items-center justify-center mx-auto mb-4 shadow-[0_0_15px_rgba(210,255,0,0.1)]">
-            <UploadCloud className="w-7 h-7 stroke-[1.8]" />
+          <div className="w-12 h-12 rounded-xl bg-[#12140F] border border-[#282C20] text-[#D2FF00] flex items-center justify-center mx-auto mb-4">
+            <UploadCloud className="w-6 h-6 stroke-[1.8]" />
           </div>
 
           {isUploading ? (
             <div className="space-y-2">
-              <h4 className="text-sm sm:text-base font-bold font-sans uppercase text-[#D2FF00] tracking-wide">
+              <h4 className="text-sm font-bold font-sans uppercase text-[#D2FF00] tracking-wide">
                 {uploadProgressMsg}
               </h4>
               <p className="text-xs text-[#A5A89C] font-mono">
-                Streaming media chunks to persistent server storage...
+                Streaming media chunks to server storage...
               </p>
             </div>
           ) : (
@@ -235,13 +234,13 @@ export const VideosPage: React.FC = () => {
                 Click to browse or drag and drop video
               </h4>
               <p className="text-xs text-[#A5A89C] max-w-md mx-auto leading-relaxed">
-                Automatic validation, FFprobe metadata extraction, Faster-Whisper transcription, and CLIP ViT keyframe indexing.
+                Automatic validation, FFprobe metadata extraction, Faster-Whisper transcription, and CLIP visual frame indexing.
               </p>
             </div>
           )}
         </div>
 
-        {/* Active Ingestion Progress Bar */}
+        {/* Active Processing Progress Bar */}
         {activeJob && (
           <div className="mt-4 p-4 rounded-xl bg-[#0B0C0A] border border-[#282C20] space-y-2.5">
             <div className="flex items-center justify-between text-xs">
@@ -249,15 +248,15 @@ export const VideosPage: React.FC = () => {
                 {activeJob.status === 'RUNNING' && <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#D2FF00]" />}
                 {activeJob.status === 'COMPLETED' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
                 {activeJob.status === 'FAILED' && <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />}
-                Pipeline Stage: <span className="font-mono text-[#D2FF00] uppercase">{activeJob.stage}</span>
+                Stage: <span className="font-mono text-[#D2FF00] uppercase">{activeJob.stage}</span>
               </span>
               <span className="font-mono text-[#D2FF00] font-bold">{Math.round(activeJob.progress)}%</span>
             </div>
 
-            <div className="w-full bg-[#1A1E14] rounded-full h-2 overflow-hidden border border-[#282C20]">
+            <div className="w-full bg-[#12140F] rounded-full h-2 overflow-hidden border border-[#282C20]">
               <div
                 className={`h-full transition-all duration-300 ${
-                  activeJob.status === 'FAILED' ? 'bg-rose-500' : 'bg-[#D2FF00] shadow-[0_0_10px_#D2FF00]'
+                  activeJob.status === 'FAILED' ? 'bg-rose-500' : 'bg-[#D2FF00]'
                 }`}
                 style={{ width: `${activeJob.progress}%` }}
               />
@@ -274,15 +273,15 @@ export const VideosPage: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-base sm:text-lg font-bold font-sans uppercase tracking-tight text-[#EBEEE0]">
-            Stored Media ({videos.length})
+            Indexed Videos ({videos.length})
           </h3>
           <span className="text-xs font-mono text-[#A5A89C]">
-            Persistent Library
+            Database Archive
           </span>
         </div>
 
         {isLoading ? (
-          <LoadingSpinner label="Querying video catalog..." />
+          <LoadingSpinner label="Loading video catalog..." />
         ) : videos.length === 0 ? (
           <EmptyState
             title="No Videos Uploaded"
@@ -299,11 +298,11 @@ export const VideosPage: React.FC = () => {
             {videos.map((vid) => (
               <div
                 key={vid.id}
-                className="bg-[#12140F] border border-[#22271C] hover:border-[#38402A] rounded-2xl p-5 sm:p-6 flex flex-col justify-between transition-all duration-200 hover:shadow-[0_0_25px_rgba(210,255,0,0.06)]"
+                className="bg-[#12140F] border border-[#22271C] hover:border-[#38402A] rounded-2xl p-5 sm:p-6 flex flex-col justify-between transition-all duration-200"
               >
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-4">
-                    <div className="w-11 h-11 rounded-xl bg-[#1A1E14] border border-[#282C20] flex items-center justify-center text-[#D2FF00] shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-[#0B0C0A] border border-[#282C20] flex items-center justify-center text-[#D2FF00] shrink-0">
                       <FileVideo className="w-5 h-5 stroke-[1.8]" />
                     </div>
                     <div>
@@ -403,7 +402,7 @@ export const VideosPage: React.FC = () => {
       {/* Video Playback & Transcript Modal */}
       {previewVideo && (
         <div className="fixed inset-0 z-50 bg-[#0B0C0A]/90 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#12140F] border border-[#282C20] rounded-3xl w-full max-w-5xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+          <div className="bg-[#12140F] border border-[#282C20] rounded-2xl w-full max-w-5xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-[#22271C] bg-[#1A1E14]">
               <div className="flex items-center gap-3 truncate">
                 <Film className="w-4 h-4 text-[#D2FF00]" />
@@ -418,7 +417,7 @@ export const VideosPage: React.FC = () => {
               </div>
               <button
                 onClick={() => setPreviewVideo(null)}
-                className="p-1.5 rounded-xl text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#282C20] transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#282C20] transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -431,7 +430,7 @@ export const VideosPage: React.FC = () => {
                   ref={videoRef}
                   controls
                   autoPlay
-                  className="w-full max-h-[50vh] lg:max-h-[60vh] rounded-2xl shadow-lg"
+                  className="w-full max-h-[50vh] lg:max-h-[60vh] rounded-xl shadow-lg"
                   src={api.getVideoStreamUrl(previewVideo.id)}
                 >
                   Your browser does not support HTML5 video.
@@ -445,7 +444,7 @@ export const VideosPage: React.FC = () => {
                     <FileText className="w-3.5 h-3.5 text-[#D2FF00]" />
                     <span>Indexed Dialogue</span>
                   </div>
-                  <span className="text-[10px] text-[#A5A89C] font-mono">Phase 3 Index</span>
+                  <span className="text-[10px] text-[#A5A89C] font-mono">Timestamped</span>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
@@ -464,10 +463,10 @@ export const VideosPage: React.FC = () => {
                             videoRef.current.play();
                           }
                         }}
-                        className="group p-3 bg-[#12140F] hover:bg-[#1A1E14] border border-[#22271C] hover:border-[#D2FF00]/50 rounded-xl transition-all cursor-pointer shadow-sm text-left"
+                        className="group p-3 bg-[#12140F] hover:bg-[#1A1E14] border border-[#22271C] hover:border-[#D2FF00] rounded-xl transition-all cursor-pointer shadow-sm text-left"
                       >
                         <div className="flex items-center justify-between gap-1 mb-1.5">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#1A1E14] text-[#D2FF00] border border-[#282C20] text-[11px] font-mono group-hover:bg-[#282C20] transition-colors">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#0B0C0A] text-[#D2FF00] border border-[#282C20] text-[11px] font-mono group-hover:bg-[#1A1E14] transition-colors">
                             <Clock className="w-2.5 h-2.5" />
                             {formatDuration(seg.start_time)} - {formatDuration(seg.end_time)}
                           </span>

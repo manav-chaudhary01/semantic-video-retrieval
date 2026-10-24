@@ -64,7 +64,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
   const [selectedVideoId, setSelectedVideoId] = useState<string>('');
   const [threshold, setThreshold] = useState<number>(0.0);
 
-  // Multimodal fusion settings (Phase 6)
+  // Multimodal fusion parameters
   const [alpha, setAlpha] = useState<number>(0.5);
   const [beta, setBeta] = useState<number>(0.5);
   const [fusionMethod, setFusionMethod] = useState<'linear' | 'rrf'>('linear');
@@ -123,7 +123,6 @@ export const SearchPage: React.FC<SearchPageProps> = ({
       );
       setSearchResponse(res);
 
-      // Auto-select top result for playback if available
       if (res.results.length > 0) {
         selectResultForPlayback(res.results[0]);
       } else {
@@ -137,7 +136,6 @@ export const SearchPage: React.FC<SearchPageProps> = ({
     }
   };
 
-  // If initialQuery provided on mount, trigger search automatically
   useEffect(() => {
     if (initialQuery.trim()) {
       handleSearch(initialQuery.trim(), initialModality);
@@ -207,25 +205,24 @@ export const SearchPage: React.FC<SearchPageProps> = ({
       {/* Search Header Banner */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[#22271C]">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1A1E14] border border-[#282C20] text-xs font-mono text-[#D2FF00] mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D2FF00]" />
-            <span>DEEP RETRIEVAL STUDIO</span>
-          </div>
+          <span className="font-mono text-xs uppercase tracking-widest text-[#D2FF00] block mb-2">
+            Retrieval Workspace
+          </span>
           <h1 className="text-3xl sm:text-5xl font-extrabold font-sans uppercase tracking-tight text-[#EBEEE0]">
             Moment Search
           </h1>
           <p className="text-xs sm:text-sm text-[#A5A89C] mt-1.5 max-w-xl">
-            Query across spoken speech transcripts and visual keyframes with sub-second temporal localization.
+            Locate exact timestamps in video archives through spoken dialogue, visual scenes, or multimodal combination.
           </p>
         </div>
 
         {/* Modality Segmented Selector */}
-        <div className="flex items-center gap-1.5 bg-[#12140F] p-1.5 rounded-2xl border border-[#22271C] self-start md:self-auto">
+        <div className="flex items-center gap-1.5 bg-[#12140F] p-1.5 rounded-xl border border-[#22271C] self-start md:self-auto">
           <button
             onClick={() => setModality('multimodal')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold tracking-wider uppercase font-sans transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wider uppercase font-sans transition-all cursor-pointer ${
               modality === 'multimodal'
-                ? 'bg-[#D2FF00] text-[#0B0C0A] shadow-[0_0_15px_rgba(210,255,0,0.3)]'
+                ? 'bg-[#D2FF00] text-[#0B0C0A]'
                 : 'text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#1A1E14]'
             }`}
           >
@@ -235,9 +232,9 @@ export const SearchPage: React.FC<SearchPageProps> = ({
 
           <button
             onClick={() => setModality('text')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold tracking-wider uppercase font-sans transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wider uppercase font-sans transition-all cursor-pointer ${
               modality === 'text'
-                ? 'bg-[#D2FF00] text-[#0B0C0A] shadow-[0_0_15px_rgba(210,255,0,0.3)]'
+                ? 'bg-[#D2FF00] text-[#0B0C0A]'
                 : 'text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#1A1E14]'
             }`}
           >
@@ -247,9 +244,9 @@ export const SearchPage: React.FC<SearchPageProps> = ({
 
           <button
             onClick={() => setModality('visual')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold tracking-wider uppercase font-sans transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wider uppercase font-sans transition-all cursor-pointer ${
               modality === 'visual'
-                ? 'bg-[#D2FF00] text-[#0B0C0A] shadow-[0_0_15px_rgba(210,255,0,0.3)]'
+                ? 'bg-[#D2FF00] text-[#0B0C0A]'
                 : 'text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#1A1E14]'
             }`}
           >
@@ -262,7 +259,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
       {/* Main Search Bar & Query Controls */}
       <Card className="bg-[#12140F] border border-[#22271C] shadow-2xl p-4 sm:p-6 space-y-4">
         {/* Main Input Field */}
-        <div className="flex items-center gap-3 bg-[#0B0C0A] rounded-2xl px-4 py-2.5 sm:py-3 border border-[#282C20] focus-within:border-[#D2FF00] focus-within:shadow-[0_0_20px_rgba(210,255,0,0.15)] transition-all">
+        <div className="flex items-center gap-3 bg-[#0B0C0A] rounded-xl px-4 py-2.5 sm:py-3 border border-[#282C20] focus-within:border-[#D2FF00] transition-all">
           <Search className="w-5 h-5 text-[#D2FF00] shrink-0" />
           <input
             type="text"
@@ -271,10 +268,10 @@ export const SearchPage: React.FC<SearchPageProps> = ({
             onKeyDown={handleKeyDown}
             placeholder={
               modality === 'multimodal'
-                ? "Search spoken speech & visual scene, e.g. 'diagram explaining neural network backpropagation'..."
+                ? "Describe spoken dialogue and visual elements (e.g. 'diagram explaining neural network backpropagation')..."
                 : modality === 'visual'
-                ? "Describe visual scene, e.g. 'a person entering the room' or 'slide with mathematical diagrams'..."
-                : "Search spoken speech dialogue, e.g. 'find where neural network backpropagation is explained'..."
+                ? "Describe visual scene or slide content (e.g. 'a person entering the room')..."
+                : "Search spoken speech dialogue (e.g. 'neural network backpropagation explained')..."
             }
             className="w-full bg-transparent text-sm sm:text-base text-[#EBEEE0] placeholder-[#A5A89C]/50 focus:outline-none"
           />
@@ -298,28 +295,28 @@ export const SearchPage: React.FC<SearchPageProps> = ({
           </Button>
         </div>
 
-        {/* Curated Suggestion Pills */}
+        {/* Suggestion Prompts */}
         <div className="flex flex-wrap items-center gap-2 text-xs pt-1">
-          <span className="text-[#A5A89C] font-mono text-[11px] uppercase tracking-wider flex items-center gap-1">
+          <span className="text-[#A5A89C] font-mono text-[11px] uppercase tracking-wider flex items-center gap-1 mr-1">
             <Sparkles className="w-3 h-3 text-[#D2FF00]" /> Prompts:
           </span>
           {currentSuggestions.map((q, idx) => (
             <button
               key={idx}
               onClick={() => handleSearch(q)}
-              className="text-xs bg-[#1A1E14] hover:bg-[#282C20] hover:text-[#D2FF00] text-[#EBEEE0] border border-[#282C20] hover:border-[#D2FF00]/50 px-3 py-1 rounded-full transition-all cursor-pointer"
+              className="text-xs bg-[#1A1E14] hover:bg-[#282C20] hover:text-[#D2FF00] text-[#EBEEE0] border border-[#282C20] hover:border-[#D2FF00] px-3 py-1 rounded-lg transition-all cursor-pointer font-mono"
             >
               &ldquo;{q}&rdquo;
             </button>
           ))}
         </div>
 
-        {/* Filter & Tuning Parameters Strip */}
+        {/* Filtering & Tuning Parameters */}
         <div className="pt-4 border-t border-[#22271C] space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-4 text-xs">
             <div className="flex flex-wrap items-center gap-3">
-              {/* Target Video Filter */}
-              <div className="flex items-center gap-2 bg-[#1A1E14] border border-[#282C20] rounded-xl px-3 py-1.5">
+              {/* Target Video Scope */}
+              <div className="flex items-center gap-2 bg-[#1A1E14] border border-[#282C20] rounded-lg px-3 py-1.5">
                 <Filter className="w-3.5 h-3.5 text-[#D2FF00]" />
                 <span className="text-[#A5A89C] font-mono text-[11px] uppercase">Scope:</span>
                 <select
@@ -337,7 +334,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
               </div>
 
               {/* Top-K Selector */}
-              <div className="flex items-center gap-2 bg-[#1A1E14] border border-[#282C20] rounded-xl px-3 py-1.5">
+              <div className="flex items-center gap-2 bg-[#1A1E14] border border-[#282C20] rounded-lg px-3 py-1.5">
                 <SlidersHorizontal className="w-3.5 h-3.5 text-[#D2FF00]" />
                 <span className="text-[#A5A89C] font-mono text-[11px] uppercase">Top-K:</span>
                 <select
@@ -353,7 +350,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
               </div>
 
               {/* Threshold Filter */}
-              <div className="flex items-center gap-2 bg-[#1A1E14] border border-[#282C20] rounded-xl px-3 py-1.5">
+              <div className="flex items-center gap-2 bg-[#1A1E14] border border-[#282C20] rounded-lg px-3 py-1.5">
                 <span className="text-[#A5A89C] font-mono text-[11px] uppercase">Min Match:</span>
                 <select
                   value={threshold}
@@ -370,18 +367,18 @@ export const SearchPage: React.FC<SearchPageProps> = ({
             </div>
           </div>
 
-          {/* Multimodal Tuning Controls (When multimodal is selected) */}
+          {/* Multimodal Tuning Controls */}
           {modality === 'multimodal' && (
-            <div className="pt-3 border-t border-[#22271C] flex flex-wrap items-center justify-between gap-3 text-xs bg-[#1A1E14]/60 p-3 rounded-xl border border-[#282C20]">
+            <div className="pt-3 border-t border-[#22271C] flex flex-wrap items-center justify-between gap-3 text-xs bg-[#0B0C0A] p-3 rounded-xl border border-[#282C20]">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[#D2FF00] font-mono text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5" /> Fusion Weight:
+                  <Layers className="w-3.5 h-3.5" /> Fusion Balance:
                 </span>
-                <div className="flex items-center gap-1 bg-[#12140F] p-1 rounded-xl border border-[#282C20]">
+                <div className="flex items-center gap-1 bg-[#12140F] p-1 rounded-lg border border-[#282C20]">
                   <button
                     type="button"
                     onClick={() => { setAlpha(0.5); setBeta(0.5); }}
-                    className={`px-3 py-1 rounded-lg text-xs font-mono transition-colors cursor-pointer ${
+                    className={`px-3 py-1 rounded text-xs font-mono transition-colors cursor-pointer ${
                       alpha === 0.5 && beta === 0.5
                         ? 'bg-[#D2FF00] text-[#0B0C0A] font-bold'
                         : 'text-[#A5A89C] hover:text-[#EBEEE0]'
@@ -392,18 +389,18 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                   <button
                     type="button"
                     onClick={() => { setAlpha(0.7); setBeta(0.3); }}
-                    className={`px-3 py-1 rounded-lg text-xs font-mono transition-colors cursor-pointer ${
+                    className={`px-3 py-1 rounded text-xs font-mono transition-colors cursor-pointer ${
                       alpha === 0.7 && beta === 0.3
                         ? 'bg-[#D2FF00] text-[#0B0C0A] font-bold'
                         : 'text-[#A5A89C] hover:text-[#EBEEE0]'
                     }`}
                   >
-                    70/30 Dialogue
+                    70/30 Speech
                   </button>
                   <button
                     type="button"
                     onClick={() => { setAlpha(0.3); setBeta(0.7); }}
-                    className={`px-3 py-1 rounded-lg text-xs font-mono transition-colors cursor-pointer ${
+                    className={`px-3 py-1 rounded text-xs font-mono transition-colors cursor-pointer ${
                       alpha === 0.3 && beta === 0.7
                         ? 'bg-[#D2FF00] text-[#0B0C0A] font-bold'
                         : 'text-[#A5A89C] hover:text-[#EBEEE0]'
@@ -415,8 +412,8 @@ export const SearchPage: React.FC<SearchPageProps> = ({
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 bg-[#12140F] border border-[#282C20] rounded-xl px-2.5 py-1">
-                  <span className="text-[#A5A89C] text-[11px] font-mono uppercase">Fusion:</span>
+                <div className="flex items-center gap-1.5 bg-[#12140F] border border-[#282C20] rounded-lg px-2.5 py-1">
+                  <span className="text-[#A5A89C] text-[11px] font-mono uppercase">Method:</span>
                   <select
                     value={fusionMethod}
                     onChange={(e) => setFusionMethod(e.target.value as 'linear' | 'rrf')}
@@ -427,7 +424,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                   </select>
                 </div>
 
-                <div className="flex items-center gap-1.5 bg-[#12140F] border border-[#282C20] rounded-xl px-2.5 py-1">
+                <div className="flex items-center gap-1.5 bg-[#12140F] border border-[#282C20] rounded-lg px-2.5 py-1">
                   <span className="text-[#A5A89C] text-[11px] font-mono uppercase">Window:</span>
                   <select
                     value={temporalWindowSec}
@@ -445,16 +442,15 @@ export const SearchPage: React.FC<SearchPageProps> = ({
         </div>
       </Card>
 
-      {/* Error Banner */}
+      {/* Error Alert */}
       {error && <ErrorAlert message={error} onRetry={() => handleSearch()} />}
 
-      {/* Interactive Video Player & Results Layout */}
+      {/* Synchronized Player & Ranked Moments */}
       {searchResponse && searchResponse.results.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Synchronized Video Player */}
+          {/* Synchronized Player */}
           <div className="lg:col-span-7 space-y-4 sticky top-24">
-            <div className="bg-[#12140F] border border-[#22271C] rounded-3xl overflow-hidden shadow-2xl">
-              {/* Video Player Header */}
+            <div className="bg-[#12140F] border border-[#22271C] rounded-2xl overflow-hidden shadow-2xl">
               <div className="p-4 bg-[#1A1E14] border-b border-[#22271C] flex items-center justify-between">
                 <div className="flex items-center gap-2.5 truncate">
                   <Film className="w-4 h-4 text-[#D2FF00] shrink-0" />
@@ -474,7 +470,6 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                 )}
               </div>
 
-              {/* Video Viewport */}
               <div className="aspect-video bg-black flex items-center justify-center relative">
                 {activeResult ? (
                   <video
@@ -494,7 +489,6 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                 )}
               </div>
 
-              {/* Synchronized Moment Info Box */}
               {activeResult && (
                 <div className="p-4 sm:p-5 bg-[#12140F] border-t border-[#22271C] space-y-4">
                   <div className="flex items-center justify-between text-xs">
@@ -527,7 +521,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                       <div className="relative w-32 h-20 rounded-xl overflow-hidden bg-[#0B0C0A] border border-[#282C20] shrink-0">
                         <img
                           src={activeResult.preview_url}
-                          alt="Visual frame keyframe"
+                          alt="Visual keyframe"
                           className="w-full h-full object-cover"
                         />
                         <span className="absolute bottom-1 right-1 px-1 py-0.5 rounded bg-black/80 font-mono text-[9px] text-[#D2FF00]">
@@ -554,7 +548,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                         {activeResult.modality === 'visual' ? (
                           <span className="flex items-center gap-2 text-amber-300">
                             <Eye className="w-4 h-4 text-amber-400 shrink-0" />
-                            Visual keyframe scene match at timestamp {formatDuration(activeResult.start_time)}
+                            Visual keyframe match at timestamp {formatDuration(activeResult.start_time)}
                           </span>
                         ) : (
                           <span>&ldquo;{highlightMatchingTerms(activeResult.text ?? '', searchResponse.query)}&rdquo;</span>
@@ -567,14 +561,14 @@ export const SearchPage: React.FC<SearchPageProps> = ({
             </div>
           </div>
 
-          {/* Right Column: Ranked Moments Stream */}
+          {/* Ranked Moments List */}
           <div className="lg:col-span-5 space-y-4">
             <div className="flex items-center justify-between text-xs text-[#A5A89C] px-1 font-mono">
               <span className="font-bold text-[#EBEEE0] uppercase">
                 {searchResponse.total_results} Moment(s) Found
               </span>
               <span className="text-[#D2FF00]">
-                {searchResponse.latency_ms}ms FAISS Latency
+                {searchResponse.latency_ms}ms FAISS Search
               </span>
             </div>
 
@@ -588,15 +582,15 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                   <div
                     key={resultKey}
                     onClick={() => selectResultForPlayback(result)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer text-left relative ${
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer text-left ${
                       isActive
-                        ? 'bg-[#1A1E14] border-[#D2FF00] shadow-[0_0_25px_rgba(210,255,0,0.15)] ring-1 ring-[#D2FF00]'
+                        ? 'bg-[#1A1E14] border-[#D2FF00] shadow-[0_0_20px_rgba(210,255,0,0.1)]'
                         : 'bg-[#12140F] border-[#22271C] hover:border-[#38402A] hover:bg-[#1A1E14]/70'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2 mb-2.5">
                       <div className="flex items-center gap-2 truncate">
-                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-lg bg-[#282C20] text-[#D2FF00]">
+                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#282C20] text-[#D2FF00]">
                           #{String(idx + 1).padStart(2, '0')}
                         </span>
                         <span className="text-xs sm:text-sm font-bold uppercase font-sans text-[#EBEEE0] truncate max-w-[180px]">
@@ -612,7 +606,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                         <span
                           className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-md border ${
                             scorePercent >= 60
-                              ? 'bg-[#D2FF00]/10 text-[#D2FF00] border-[#D2FF00]/30 shadow-[0_0_8px_rgba(210,255,0,0.15)]'
+                              ? 'bg-[#D2FF00]/10 text-[#D2FF00] border-[#D2FF00]/30'
                               : scorePercent >= 40
                               ? 'bg-amber-950/60 text-amber-300 border-amber-800/60'
                               : 'bg-[#1A1E14] text-[#A5A89C] border-[#282C20]'
@@ -625,11 +619,11 @@ export const SearchPage: React.FC<SearchPageProps> = ({
 
                     <div className="flex items-start gap-3 mb-3">
                       {result.preview_url && (
-                        <div className="relative w-24 h-16 rounded-xl overflow-hidden bg-[#0B0C0A] border border-[#282C20] shrink-0 group">
+                        <div className="relative w-24 h-16 rounded-xl overflow-hidden bg-[#0B0C0A] border border-[#282C20] shrink-0">
                           <img
                             src={result.preview_url}
                             alt={`Scene at ${formatDuration(result.start_time)}`}
-                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            className="w-full h-full object-cover"
                             loading="lazy"
                           />
                           <span className="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-black/80 text-[9px] font-mono text-[#D2FF00]">
@@ -663,7 +657,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
 
                     <div className="flex items-center justify-between pt-2.5 border-t border-[#22271C] text-[11px] font-mono">
                       <span className="text-[#A5A89C]">
-                        Raw Score: {result.score.toFixed(4)}
+                        Score: {result.score.toFixed(4)}
                       </span>
                       <Button
                         size="sm"
@@ -720,34 +714,34 @@ export const SearchPage: React.FC<SearchPageProps> = ({
       {/* Initial Clean State */}
       {!searchResponse && !isSearching && (
         <div className="max-w-4xl mx-auto pt-6">
-          <div className="p-8 bg-[#12140F] border border-[#22271C] rounded-3xl text-center space-y-6">
-            <div className="w-14 h-14 rounded-2xl bg-[#1A1E14] border border-[#282C20] flex items-center justify-center mx-auto text-[#D2FF00] shadow-[0_0_20px_rgba(210,255,0,0.1)]">
-              <Sparkles className="w-7 h-7" />
+          <div className="p-8 bg-[#12140F] border border-[#22271C] rounded-2xl text-center space-y-6">
+            <div className="w-12 h-12 rounded-xl bg-[#1A1E14] border border-[#282C20] flex items-center justify-center mx-auto text-[#D2FF00]">
+              <Sparkles className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-lg sm:text-xl font-bold font-sans uppercase tracking-tight text-[#EBEEE0]">
-                Multimodal Retrieval Engine Ready
+              <h3 className="text-lg font-bold font-sans uppercase tracking-tight text-[#EBEEE0]">
+                Multimodal Retrieval Console
               </h3>
               <p className="text-xs sm:text-sm text-[#A5A89C] mt-1.5 max-w-lg mx-auto leading-relaxed">
-                Dual FAISS vector indices consolidate speech transcription (<code className="text-[#D2FF00]">all-MiniLM-L6-v2</code>) and visual keyframes (<code className="text-[#D2FF00]">CLIP ViT-B/32</code>) with temporal context consolidation.
+                Query indexed videos with spoken speech transcription and visual keyframe vectors.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2 text-left">
-              <div className="p-3.5 rounded-xl bg-[#1A1E14] border border-[#282C20] text-xs">
+              <div className="p-3.5 rounded-xl bg-[#0B0C0A] border border-[#22271C] text-xs">
                 <span className="font-mono text-[#D2FF00] text-[10px] block mb-1">01 / CALIBRATION</span>
                 <span className="font-medium text-[#EBEEE0]">Score Fusion (&alpha;&middot;Text + &beta;&middot;Visual)</span>
               </div>
-              <div className="p-3.5 rounded-xl bg-[#1A1E14] border border-[#282C20] text-xs">
+              <div className="p-3.5 rounded-xl bg-[#0B0C0A] border border-[#22271C] text-xs">
                 <span className="font-mono text-[#D2FF00] text-[10px] block mb-1">02 / TEMPORAL</span>
                 <span className="font-medium text-[#EBEEE0]">Sliding Window Context Consolidation</span>
               </div>
-              <div className="p-3.5 rounded-xl bg-[#1A1E14] border border-[#282C20] text-xs">
+              <div className="p-3.5 rounded-xl bg-[#0B0C0A] border border-[#22271C] text-xs">
                 <span className="font-mono text-[#D2FF00] text-[10px] block mb-1">03 / VISION</span>
-                <span className="font-medium text-[#EBEEE0]">Consecutive Frame Clustering & Dedup</span>
+                <span className="font-medium text-[#EBEEE0]">Consecutive Frame Clustering</span>
               </div>
-              <div className="p-3.5 rounded-xl bg-[#1A1E14] border border-[#282C20] text-xs">
-                <span className="font-mono text-[#D2FF00] text-[10px] block mb-1">04 / SPEED</span>
-                <span className="font-medium text-[#EBEEE0]">Dual Vector Search Sub-30ms Latency</span>
+              <div className="p-3.5 rounded-xl bg-[#0B0C0A] border border-[#22271C] text-xs">
+                <span className="font-mono text-[#D2FF00] text-[10px] block mb-1">04 / FAISS</span>
+                <span className="font-medium text-[#EBEEE0]">Dual Vector Cosine Indexing</span>
               </div>
             </div>
           </div>
