@@ -167,7 +167,7 @@ export const VideosPage: React.FC = () => {
           <span className="font-mono text-xs uppercase tracking-widest text-[#D2FF00] block mb-2">
             Media Ingestion
           </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold font-sans uppercase tracking-tight text-[#EBEEE0]">
+          <h1 className="text-3xl sm:text-5xl font-extrabold font-display uppercase tracking-tight text-[#EBEEE0]">
             Video Library
           </h1>
           <p className="text-xs sm:text-sm text-[#A5A89C] mt-1.5">

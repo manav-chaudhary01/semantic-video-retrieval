@@ -29,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Film className="w-4 h-4 text-[#D2FF00] group-hover:scale-105 transition-transform" />
           </div>
           <div>
-            <span className="font-extrabold font-sans text-[#EBEEE0] text-sm sm:text-base tracking-tight uppercase block leading-none">
+            <span className="font-extrabold font-display text-[#EBEEE0] text-sm sm:text-base tracking-tight uppercase block leading-none">
               Semantic Video Retrieval
             </span>
             <span className="text-[10px] text-[#A5A89C] font-mono tracking-wider uppercase mt-1 block">
