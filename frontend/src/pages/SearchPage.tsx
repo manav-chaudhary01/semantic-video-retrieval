@@ -13,7 +13,6 @@ import {
   RotateCcw,
   X,
 } from 'lucide-react';
-import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
 import { EmptyState } from '../components/common/EmptyState';
@@ -177,7 +176,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
       regex.test(part) ? (
         <mark
           key={i}
-          className="bg-[#D2FF00]/25 text-[#D2FF00] font-bold px-1 rounded border border-[#D2FF00]/40"
+          className="bg-white/20 text-white font-semibold px-1 rounded border border-white/30"
         >
           {part}
         </mark>
@@ -201,29 +200,29 @@ export const SearchPage: React.FC<SearchPageProps> = ({
       : TEXT_EXAMPLE_QUERIES;
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
-      {/* Search Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[#22271C]">
-        <div>
-          <span className="font-mono text-xs uppercase tracking-widest text-[#D2FF00] block mb-2">
+    <div className="space-y-12 max-w-7xl mx-auto">
+      {/* 1. Header (Miles Works Header Style) */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-white/10">
+        <div className="space-y-2">
+          <span className="font-mono text-xs uppercase tracking-widest text-neutral-400 block">
             Retrieval Workspace
           </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold font-display uppercase tracking-tight text-[#EBEEE0]">
-            Moment Search
+          <h1 className="text-3xl sm:text-5xl font-semibold font-display uppercase tracking-tight text-white">
+            Moment Search ( 24-26 )
           </h1>
-          <p className="text-xs sm:text-sm text-[#A5A89C] mt-1.5 max-w-xl">
-            Locate exact timestamps in video archives through spoken dialogue, visual scenes, or multimodal combination.
+          <p className="text-xs sm:text-sm text-neutral-400 max-w-xl font-sans">
+            Locate exact sub-second timestamps in video archives through spoken dialogue, visual scene semantics, or multimodal fusion.
           </p>
         </div>
 
-        {/* Modality Segmented Selector */}
-        <div className="flex items-center gap-1.5 bg-[#12140F] p-1.5 rounded-xl border border-[#22271C] self-start md:self-auto">
+        {/* Modality Segmented Selector (Miles Pill Style) */}
+        <div className="flex items-center gap-1 bg-neutral-900/90 p-1 rounded-full border border-white/10 self-start md:self-auto">
           <button
             onClick={() => setModality('multimodal')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wider uppercase font-sans transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium tracking-tight font-sans transition-all cursor-pointer ${
               modality === 'multimodal'
-                ? 'bg-[#D2FF00] text-[#0B0C0A]'
-                : 'text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#1A1E14]'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-neutral-400 hover:text-white hover:bg-white/5'
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
@@ -232,22 +231,22 @@ export const SearchPage: React.FC<SearchPageProps> = ({
 
           <button
             onClick={() => setModality('text')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wider uppercase font-sans transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium tracking-tight font-sans transition-all cursor-pointer ${
               modality === 'text'
-                ? 'bg-[#D2FF00] text-[#0B0C0A]'
-                : 'text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#1A1E14]'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-neutral-400 hover:text-white hover:bg-white/5'
             }`}
           >
             <Mic className="w-3.5 h-3.5" />
-            <span>Speech</span>
+            <span>Dialogue</span>
           </button>
 
           <button
             onClick={() => setModality('visual')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wider uppercase font-sans transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium tracking-tight font-sans transition-all cursor-pointer ${
               modality === 'visual'
-                ? 'bg-[#D2FF00] text-[#0B0C0A]'
-                : 'text-[#A5A89C] hover:text-[#EBEEE0] hover:bg-[#1A1E14]'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-neutral-400 hover:text-white hover:bg-white/5'
             }`}
           >
             <Eye className="w-3.5 h-3.5" />
@@ -256,11 +255,11 @@ export const SearchPage: React.FC<SearchPageProps> = ({
         </div>
       </div>
 
-      {/* Main Search Bar & Query Controls */}
-      <Card className="bg-[#12140F] border border-[#22271C] shadow-2xl p-4 sm:p-6 space-y-4">
+      {/* 2. Main Search Console & Query Controls */}
+      <div className="bg-neutral-950 border border-white/10 rounded-2xl p-6 sm:p-8 space-y-6">
         {/* Main Input Field */}
-        <div className="flex items-center gap-3 bg-[#0B0C0A] rounded-xl px-4 py-2.5 sm:py-3 border border-[#282C20] focus-within:border-[#D2FF00] transition-all">
-          <Search className="w-5 h-5 text-[#D2FF00] shrink-0" />
+        <div className="flex items-center gap-3 bg-neutral-900/90 rounded-full px-5 py-3 border border-white/15 focus-within:border-white/40 transition-all shadow-md">
+          <Search className="w-4 h-4 text-neutral-400 shrink-0" />
           <input
             type="text"
             value={query}
@@ -273,38 +272,36 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                 ? "Describe visual scene or slide content (e.g. 'a person entering the room')..."
                 : "Search spoken speech dialogue (e.g. 'neural network backpropagation explained')..."
             }
-            className="w-full bg-transparent text-sm sm:text-base text-[#EBEEE0] placeholder-[#A5A89C]/50 focus:outline-none"
+            className="w-full bg-transparent text-sm sm:text-base text-white placeholder-neutral-400 focus:outline-none font-sans"
           />
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="text-xs text-[#A5A89C] hover:text-[#EBEEE0] px-2 py-1 cursor-pointer"
+              className="text-xs text-neutral-400 hover:text-white px-2 py-1 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           )}
-          <Button
-            variant="primary"
-            size="md"
+          <button
             onClick={() => handleSearch()}
             disabled={!query.trim() || isSearching}
-            isLoading={isSearching}
-            leftIcon={<Sparkles className="w-4 h-4" />}
+            className="px-5 py-2 rounded-full bg-white text-black hover:bg-neutral-200 text-xs font-medium tracking-tight transition-all cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm active:scale-95 flex items-center gap-1.5"
           >
-            Search
-          </Button>
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>{isSearching ? 'Searching...' : 'Search'}</span>
+          </button>
         </div>
 
         {/* Suggestion Prompts */}
         <div className="flex flex-wrap items-center gap-2 text-xs pt-1">
-          <span className="text-[#A5A89C] font-mono text-[11px] uppercase tracking-wider flex items-center gap-1 mr-1">
-            <Sparkles className="w-3 h-3 text-[#D2FF00]" /> Prompts:
+          <span className="text-neutral-400 font-mono text-[11px] uppercase tracking-wider flex items-center gap-1 mr-1">
+            <Sparkles className="w-3 h-3 text-white" /> Prompts:
           </span>
           {currentSuggestions.map((q, idx) => (
             <button
               key={idx}
               onClick={() => handleSearch(q)}
-              className="text-xs bg-[#1A1E14] hover:bg-[#282C20] hover:text-[#D2FF00] text-[#EBEEE0] border border-[#282C20] hover:border-[#D2FF00] px-3 py-1 rounded-lg transition-all cursor-pointer font-mono"
+              className="text-xs bg-neutral-900/70 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/10 hover:border-white/25 px-3 py-1 rounded-full transition-all cursor-pointer font-sans"
             >
               &ldquo;{q}&rdquo;
             </button>
@@ -312,21 +309,21 @@ export const SearchPage: React.FC<SearchPageProps> = ({
         </div>
 
         {/* Filtering & Tuning Parameters */}
-        <div className="pt-4 border-t border-[#22271C] space-y-3">
+        <div className="pt-4 border-t border-white/10 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4 text-xs">
             <div className="flex flex-wrap items-center gap-3">
               {/* Target Video Scope */}
-              <div className="flex items-center gap-2 bg-[#1A1E14] border border-[#282C20] rounded-lg px-3 py-1.5">
-                <Filter className="w-3.5 h-3.5 text-[#D2FF00]" />
-                <span className="text-[#A5A89C] font-mono text-[11px] uppercase">Scope:</span>
+              <div className="flex items-center gap-2 bg-neutral-900/80 border border-white/10 rounded-full px-3.5 py-1.5">
+                <Filter className="w-3.5 h-3.5 text-neutral-400" />
+                <span className="text-neutral-400 font-mono text-[11px] uppercase">Scope:</span>
                 <select
                   value={selectedVideoId}
                   onChange={(e) => setSelectedVideoId(e.target.value)}
-                  className="bg-transparent text-[#EBEEE0] text-xs focus:outline-none cursor-pointer"
+                  className="bg-transparent text-white text-xs focus:outline-none cursor-pointer"
                 >
-                  <option value="" className="bg-[#12140F]">All Indexed Videos ({videos.length})</option>
+                  <option value="" className="bg-neutral-950 text-white">All Indexed Videos ({videos.length})</option>
                   {videos.map((v) => (
-                    <option key={v.id} value={v.id} className="bg-[#12140F]">
+                    <option key={v.id} value={v.id} className="bg-neutral-950 text-white">
                       {v.original_filename}
                     </option>
                   ))}
@@ -334,34 +331,34 @@ export const SearchPage: React.FC<SearchPageProps> = ({
               </div>
 
               {/* Top-K Selector */}
-              <div className="flex items-center gap-2 bg-[#1A1E14] border border-[#282C20] rounded-lg px-3 py-1.5">
-                <SlidersHorizontal className="w-3.5 h-3.5 text-[#D2FF00]" />
-                <span className="text-[#A5A89C] font-mono text-[11px] uppercase">Top-K:</span>
+              <div className="flex items-center gap-2 bg-neutral-900/80 border border-white/10 rounded-full px-3.5 py-1.5">
+                <SlidersHorizontal className="w-3.5 h-3.5 text-neutral-400" />
+                <span className="text-neutral-400 font-mono text-[11px] uppercase">Top-K:</span>
                 <select
                   value={topK}
                   onChange={(e) => setTopK(Number(e.target.value))}
-                  className="bg-transparent text-[#EBEEE0] text-xs focus:outline-none cursor-pointer"
+                  className="bg-transparent text-white text-xs focus:outline-none cursor-pointer"
                 >
-                  <option value={3} className="bg-[#12140F]">3 Moments</option>
-                  <option value={5} className="bg-[#12140F]">5 Moments</option>
-                  <option value={10} className="bg-[#12140F]">10 Moments</option>
-                  <option value={20} className="bg-[#12140F]">20 Moments</option>
+                  <option value={3} className="bg-neutral-950 text-white">3 Moments</option>
+                  <option value={5} className="bg-neutral-950 text-white">5 Moments</option>
+                  <option value={10} className="bg-neutral-950 text-white">10 Moments</option>
+                  <option value={20} className="bg-neutral-950 text-white">20 Moments</option>
                 </select>
               </div>
 
               {/* Threshold Filter */}
-              <div className="flex items-center gap-2 bg-[#1A1E14] border border-[#282C20] rounded-lg px-3 py-1.5">
-                <span className="text-[#A5A89C] font-mono text-[11px] uppercase">Min Match:</span>
+              <div className="flex items-center gap-2 bg-neutral-900/80 border border-white/10 rounded-full px-3.5 py-1.5">
+                <span className="text-neutral-400 font-mono text-[11px] uppercase">Min Match:</span>
                 <select
                   value={threshold}
                   onChange={(e) => setThreshold(Number(e.target.value))}
-                  className="bg-transparent text-[#EBEEE0] text-xs focus:outline-none cursor-pointer font-mono"
+                  className="bg-transparent text-white text-xs focus:outline-none cursor-pointer font-mono"
                 >
-                  <option value={0.0} className="bg-[#12140F]">Any (&ge; 0%)</option>
-                  <option value={0.2} className="bg-[#12140F]">&ge; 20%</option>
-                  <option value={0.3} className="bg-[#12140F]">&ge; 30%</option>
-                  <option value={0.4} className="bg-[#12140F]">&ge; 40%</option>
-                  <option value={0.5} className="bg-[#12140F]">&ge; 50%</option>
+                  <option value={0.0} className="bg-neutral-950 text-white">Any (&ge; 0%)</option>
+                  <option value={0.2} className="bg-neutral-950 text-white">&ge; 20%</option>
+                  <option value={0.3} className="bg-neutral-950 text-white">&ge; 30%</option>
+                  <option value={0.4} className="bg-neutral-950 text-white">&ge; 40%</option>
+                  <option value={0.5} className="bg-neutral-950 text-white">&ge; 50%</option>
                 </select>
               </div>
             </div>
@@ -369,19 +366,19 @@ export const SearchPage: React.FC<SearchPageProps> = ({
 
           {/* Multimodal Tuning Controls */}
           {modality === 'multimodal' && (
-            <div className="pt-3 border-t border-[#22271C] flex flex-wrap items-center justify-between gap-3 text-xs bg-[#0B0C0A] p-3 rounded-xl border border-[#282C20]">
+            <div className="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs bg-neutral-900/40 p-3.5 rounded-xl border border-white/5">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[#D2FF00] font-mono text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5" /> Fusion Balance:
+                <span className="text-white font-mono text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-neutral-400" /> Fusion Balance:
                 </span>
-                <div className="flex items-center gap-1 bg-[#12140F] p-1 rounded-lg border border-[#282C20]">
+                <div className="flex items-center gap-1 bg-black p-1 rounded-full border border-white/10">
                   <button
                     type="button"
                     onClick={() => { setAlpha(0.5); setBeta(0.5); }}
-                    className={`px-3 py-1 rounded text-xs font-mono transition-colors cursor-pointer ${
+                    className={`px-3 py-1 rounded-full text-xs font-mono transition-colors cursor-pointer ${
                       alpha === 0.5 && beta === 0.5
-                        ? 'bg-[#D2FF00] text-[#0B0C0A] font-bold'
-                        : 'text-[#A5A89C] hover:text-[#EBEEE0]'
+                        ? 'bg-white text-black font-semibold'
+                        : 'text-neutral-400 hover:text-white'
                     }`}
                   >
                     50/50 Balanced
@@ -389,21 +386,21 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                   <button
                     type="button"
                     onClick={() => { setAlpha(0.7); setBeta(0.3); }}
-                    className={`px-3 py-1 rounded text-xs font-mono transition-colors cursor-pointer ${
+                    className={`px-3 py-1 rounded-full text-xs font-mono transition-colors cursor-pointer ${
                       alpha === 0.7 && beta === 0.3
-                        ? 'bg-[#D2FF00] text-[#0B0C0A] font-bold'
-                        : 'text-[#A5A89C] hover:text-[#EBEEE0]'
+                        ? 'bg-white text-black font-semibold'
+                        : 'text-neutral-400 hover:text-white'
                     }`}
                   >
-                    70/30 Speech
+                    70/30 Dialogue
                   </button>
                   <button
                     type="button"
                     onClick={() => { setAlpha(0.3); setBeta(0.7); }}
-                    className={`px-3 py-1 rounded text-xs font-mono transition-colors cursor-pointer ${
+                    className={`px-3 py-1 rounded-full text-xs font-mono transition-colors cursor-pointer ${
                       alpha === 0.3 && beta === 0.7
-                        ? 'bg-[#D2FF00] text-[#0B0C0A] font-bold'
-                        : 'text-[#A5A89C] hover:text-[#EBEEE0]'
+                        ? 'bg-white text-black font-semibold'
+                        : 'text-neutral-400 hover:text-white'
                     }`}
                   >
                     30/70 Visual
@@ -412,58 +409,58 @@ export const SearchPage: React.FC<SearchPageProps> = ({
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 bg-[#12140F] border border-[#282C20] rounded-lg px-2.5 py-1">
-                  <span className="text-[#A5A89C] text-[11px] font-mono uppercase">Method:</span>
+                <div className="flex items-center gap-1.5 bg-black border border-white/10 rounded-full px-3 py-1">
+                  <span className="text-neutral-400 text-[11px] font-mono uppercase">Method:</span>
                   <select
                     value={fusionMethod}
                     onChange={(e) => setFusionMethod(e.target.value as 'linear' | 'rrf')}
-                    className="bg-transparent text-[#EBEEE0] text-xs focus:outline-none cursor-pointer"
+                    className="bg-transparent text-white text-xs focus:outline-none cursor-pointer"
                   >
-                    <option value="linear" className="bg-[#12140F]">Calibrated Linear</option>
-                    <option value="rrf" className="bg-[#12140F]">RRF Aggregation</option>
+                    <option value="linear" className="bg-neutral-950 text-white">Calibrated Linear</option>
+                    <option value="rrf" className="bg-neutral-950 text-white">RRF (k=60)</option>
                   </select>
                 </div>
 
-                <div className="flex items-center gap-1.5 bg-[#12140F] border border-[#282C20] rounded-lg px-2.5 py-1">
-                  <span className="text-[#A5A89C] text-[11px] font-mono uppercase">Window:</span>
+                <div className="flex items-center gap-1.5 bg-black border border-white/10 rounded-full px-3 py-1">
+                  <span className="text-neutral-400 text-[11px] font-mono uppercase">Window:</span>
                   <select
                     value={temporalWindowSec}
                     onChange={(e) => setTemporalWindowSec(Number(e.target.value))}
-                    className="bg-transparent text-[#EBEEE0] text-xs focus:outline-none cursor-pointer font-mono"
+                    className="bg-transparent text-white text-xs focus:outline-none cursor-pointer font-mono"
                   >
-                    <option value={5.0} className="bg-[#12140F]">&plusmn;5 sec</option>
-                    <option value={10.0} className="bg-[#12140F]">&plusmn;10 sec</option>
-                    <option value={15.0} className="bg-[#12140F]">&plusmn;15 sec</option>
+                    <option value={5.0} className="bg-neutral-950 text-white">&plusmn;5 sec</option>
+                    <option value={10.0} className="bg-neutral-950 text-white">&plusmn;10 sec</option>
+                    <option value={15.0} className="bg-neutral-950 text-white">&plusmn;15 sec</option>
                   </select>
                 </div>
               </div>
             </div>
           )}
         </div>
-      </Card>
+      </div>
 
       {/* Error Alert */}
       {error && <ErrorAlert message={error} onRetry={() => handleSearch()} />}
 
-      {/* Synchronized Player & Ranked Moments */}
+      {/* 3. Synchronized Player & Ranked Moments (Miles Case Study Layout) */}
       {searchResponse && searchResponse.results.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Synchronized Player */}
+          {/* Synchronized Player Column */}
           <div className="lg:col-span-7 space-y-4 sticky top-24">
-            <div className="bg-[#12140F] border border-[#22271C] rounded-2xl overflow-hidden shadow-2xl">
-              <div className="p-4 bg-[#1A1E14] border-b border-[#22271C] flex items-center justify-between">
+            <div className="bg-neutral-950 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="p-4 bg-neutral-900/60 border-b border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-2.5 truncate">
-                  <Film className="w-4 h-4 text-[#D2FF00] shrink-0" />
-                  <span className="text-xs sm:text-sm font-bold uppercase font-sans text-[#EBEEE0] truncate">
+                  <Film className="w-4 h-4 text-white shrink-0" />
+                  <span className="text-xs sm:text-sm font-semibold uppercase font-display text-white truncate">
                     {activeResult ? activeResult.video_title : 'Synchronized Player'}
                   </span>
                 </div>
                 {activeResult && (
                   <div className="flex items-center gap-2 shrink-0">
-                    <Badge variant={activeResult.modality === 'multimodal' ? 'purple' : activeResult.modality === 'visual' ? 'warning' : 'info'} size="sm">
+                    <Badge variant="lime" size="sm">
                       {activeResult.modality}
                     </Badge>
-                    <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#12140F] text-[#D2FF00] border border-[#282C20]">
+                    <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-black text-white border border-white/15">
                       {formatDuration(activeResult.start_time)} - {formatDuration(activeResult.end_time)}
                     </span>
                   </div>
@@ -482,21 +479,21 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                     Your browser does not support HTML5 video.
                   </video>
                 ) : (
-                  <div className="text-[#A5A89C] text-xs flex flex-col items-center gap-3">
-                    <Play className="w-10 h-10 text-[#282C20]" />
+                  <div className="text-neutral-400 text-xs flex flex-col items-center gap-3">
+                    <Play className="w-10 h-10 text-neutral-800" />
                     <span className="font-mono uppercase tracking-wider">Select a moment to play</span>
                   </div>
                 )}
               </div>
 
               {activeResult && (
-                <div className="p-4 sm:p-5 bg-[#12140F] border-t border-[#22271C] space-y-4">
+                <div className="p-5 sm:p-6 bg-neutral-950 border-t border-white/10 space-y-4">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-mono text-[#D2FF00] flex items-center gap-2 font-semibold">
-                      <Clock className="w-3.5 h-3.5" />
+                    <span className="font-mono text-white flex items-center gap-2 font-medium">
+                      <Clock className="w-3.5 h-3.5 text-neutral-400" />
                       Interval: {formatDuration(activeResult.start_time)} &rarr; {formatDuration(activeResult.end_time)}
                       {activeResult.peak_time && (
-                        <span className="text-[#A5A89C] font-normal">
+                        <span className="text-neutral-400 font-normal">
                           (Peak: {formatDuration(activeResult.peak_time)})
                         </span>
                       )}
@@ -518,14 +515,14 @@ export const SearchPage: React.FC<SearchPageProps> = ({
 
                   <div className="flex items-start gap-4">
                     {activeResult.preview_url && (
-                      <div className="relative w-32 h-20 rounded-xl overflow-hidden bg-[#0B0C0A] border border-[#282C20] shrink-0">
+                      <div className="relative w-32 h-20 rounded-xl overflow-hidden bg-black border border-white/10 shrink-0">
                         <img
                           src={activeResult.preview_url}
                           alt="Visual keyframe"
                           className="w-full h-full object-cover"
                         />
-                        <span className="absolute bottom-1 right-1 px-1 py-0.5 rounded bg-black/80 font-mono text-[9px] text-[#D2FF00]">
-                          KEYFRAME
+                        <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 font-mono text-[9px] text-white">
+                          FRAME
                         </span>
                       </div>
                     )}
@@ -533,21 +530,21 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                       {activeResult.modality === 'multimodal' && (
                         <div className="flex items-center gap-2 text-[11px] font-mono">
                           {activeResult.text_score !== undefined && activeResult.text_score !== null && (
-                            <span className="bg-[#1A1E14] px-2.5 py-0.5 rounded-lg border border-[#282C20] text-[#EBEEE0]">
-                              Speech: <span className="text-[#D2FF00] font-bold">{Math.round(activeResult.text_score * 100)}%</span>
+                            <span className="bg-neutral-900 px-2.5 py-0.5 rounded-full border border-white/10 text-neutral-300">
+                              Speech: <span className="text-white font-bold">{Math.round(activeResult.text_score * 100)}%</span>
                             </span>
                           )}
                           {activeResult.visual_score !== undefined && activeResult.visual_score !== null && (
-                            <span className="bg-[#1A1E14] px-2.5 py-0.5 rounded-lg border border-[#282C20] text-[#EBEEE0]">
-                              Visual: <span className="text-amber-400 font-bold">{Math.round(activeResult.visual_score * 100)}%</span>
+                            <span className="bg-neutral-900 px-2.5 py-0.5 rounded-full border border-white/10 text-neutral-300">
+                              Visual: <span className="text-white font-bold">{Math.round(activeResult.visual_score * 100)}%</span>
                             </span>
                           )}
                         </div>
                       )}
-                      <p className="text-xs sm:text-sm text-[#EBEEE0] bg-[#1A1E14] p-3 rounded-xl border border-[#282C20] leading-relaxed">
+                      <p className="text-xs sm:text-sm text-neutral-200 bg-neutral-900/60 p-3.5 rounded-xl border border-white/5 leading-relaxed font-sans">
                         {activeResult.modality === 'visual' ? (
-                          <span className="flex items-center gap-2 text-amber-300">
-                            <Eye className="w-4 h-4 text-amber-400 shrink-0" />
+                          <span className="flex items-center gap-2 text-neutral-200">
+                            <Eye className="w-4 h-4 text-white shrink-0" />
                             Visual keyframe match at timestamp {formatDuration(activeResult.start_time)}
                           </span>
                         ) : (
@@ -561,13 +558,13 @@ export const SearchPage: React.FC<SearchPageProps> = ({
             </div>
           </div>
 
-          {/* Ranked Moments List */}
+          {/* Ranked Moments List Column */}
           <div className="lg:col-span-5 space-y-4">
-            <div className="flex items-center justify-between text-xs text-[#A5A89C] px-1 font-mono">
-              <span className="font-bold text-[#EBEEE0] uppercase">
-                {searchResponse.total_results} Moment(s) Found
+            <div className="flex items-center justify-between text-xs text-neutral-400 px-1 font-mono">
+              <span className="font-semibold text-white uppercase tracking-wider">
+                {searchResponse.total_results} Moment(s) Located
               </span>
-              <span className="text-[#D2FF00]">
+              <span className="text-neutral-400">
                 {searchResponse.latency_ms}ms FAISS Search
               </span>
             </div>
@@ -582,34 +579,34 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                   <div
                     key={resultKey}
                     onClick={() => selectResultForPlayback(result)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer text-left ${
+                    className={`p-5 rounded-2xl border transition-all cursor-pointer text-left ${
                       isActive
-                        ? 'bg-[#1A1E14] border-[#D2FF00] shadow-[0_0_20px_rgba(210,255,0,0.1)]'
-                        : 'bg-[#12140F] border-[#22271C] hover:border-[#38402A] hover:bg-[#1A1E14]/70'
+                        ? 'bg-neutral-900/90 border-white/40 shadow-lg'
+                        : 'bg-neutral-950 border-white/10 hover:border-white/25 hover:bg-neutral-900/40'
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-2 mb-2.5">
+                    <div className="flex items-start justify-between gap-2 mb-3">
                       <div className="flex items-center gap-2 truncate">
-                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#282C20] text-[#D2FF00]">
+                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-neutral-800 text-white">
                           #{String(idx + 1).padStart(2, '0')}
                         </span>
-                        <span className="text-xs sm:text-sm font-bold uppercase font-sans text-[#EBEEE0] truncate max-w-[180px]">
+                        <span className="text-xs sm:text-sm font-semibold uppercase font-display text-white truncate max-w-[180px]">
                           {result.video_title}
                         </span>
                       </div>
 
                       <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#1A1E14] text-[#EBEEE0] border border-[#282C20] text-xs font-mono">
-                          <Clock className="w-3 h-3 text-[#D2FF00]" />
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black text-white border border-white/10 text-xs font-mono">
+                          <Clock className="w-3 h-3 text-neutral-400" />
                           {formatDuration(result.start_time)}
                         </span>
                         <span
-                          className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-md border ${
+                          className={`text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full border ${
                             scorePercent >= 60
-                              ? 'bg-[#D2FF00]/10 text-[#D2FF00] border-[#D2FF00]/30'
+                              ? 'bg-white/10 text-white border-white/25'
                               : scorePercent >= 40
-                              ? 'bg-amber-950/60 text-amber-300 border-amber-800/60'
-                              : 'bg-[#1A1E14] text-[#A5A89C] border-[#282C20]'
+                              ? 'bg-amber-950/40 text-amber-300 border-amber-800/40'
+                              : 'bg-neutral-900 text-neutral-400 border-white/10'
                           }`}
                         >
                           {scorePercent}% MATCH
@@ -619,25 +616,25 @@ export const SearchPage: React.FC<SearchPageProps> = ({
 
                     <div className="flex items-start gap-3 mb-3">
                       {result.preview_url && (
-                        <div className="relative w-24 h-16 rounded-xl overflow-hidden bg-[#0B0C0A] border border-[#282C20] shrink-0">
+                        <div className="relative w-24 h-16 rounded-xl overflow-hidden bg-black border border-white/10 shrink-0">
                           <img
                             src={result.preview_url}
                             alt={`Scene at ${formatDuration(result.start_time)}`}
                             className="w-full h-full object-cover"
                             loading="lazy"
                           />
-                          <span className="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-black/80 text-[9px] font-mono text-[#D2FF00]">
+                          <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-[9px] font-mono text-white">
                             {formatDuration(result.start_time)}
                           </span>
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <span className="text-[10px] uppercase font-mono font-semibold px-1.5 py-0.5 rounded bg-[#1A1E14] text-[#A5A89C] border border-[#282C20]">
+                          <span className="text-[10px] uppercase font-mono font-semibold px-2 py-0.5 rounded-full bg-neutral-900 text-neutral-400 border border-white/10">
                             {result.modality}
                           </span>
                           {result.modality === 'multimodal' && (
-                            <div className="flex items-center gap-1.5 text-[10px] text-[#A5A89C] font-mono">
+                            <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 font-mono">
                               {result.text_score !== undefined && (
                                 <span>Speech: {Math.round(result.text_score * 100)}%</span>
                               )}
@@ -647,7 +644,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                             </div>
                           )}
                         </div>
-                        <p className="text-xs text-[#EBEEE0] line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-neutral-300 line-clamp-2 leading-relaxed font-sans">
                           {result.modality === 'visual'
                             ? `Visual match for "${searchResponse.query}"`
                             : highlightMatchingTerms(result.text ?? '', searchResponse.query)}
@@ -655,13 +652,13 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2.5 border-t border-[#22271C] text-[11px] font-mono">
-                      <span className="text-[#A5A89C]">
-                        Score: {result.score.toFixed(4)}
+                    <div className="flex items-center justify-between pt-3 border-t border-white/10 text-[11px] font-mono">
+                      <span className="text-neutral-400">
+                        Cosine Score: {result.score.toFixed(4)}
                       </span>
                       <Button
                         size="sm"
-                        variant={isActive ? 'lime' : 'outline'}
+                        variant={isActive ? 'primary' : 'outline'}
                         onClick={(e) => {
                           e.stopPropagation();
                           selectResultForPlayback(result);
@@ -669,7 +666,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                         leftIcon={<Play className="w-3 h-3" />}
                         className="h-7 text-[11px]"
                       >
-                        {isActive ? 'Playing Now' : 'Jump to Moment'}
+                        {isActive ? 'Playing' : 'Jump'}
                       </Button>
                     </div>
                   </div>
@@ -714,34 +711,34 @@ export const SearchPage: React.FC<SearchPageProps> = ({
       {/* Initial Clean State */}
       {!searchResponse && !isSearching && (
         <div className="max-w-4xl mx-auto pt-6">
-          <div className="p-8 bg-[#12140F] border border-[#22271C] rounded-2xl text-center space-y-6">
-            <div className="w-12 h-12 rounded-xl bg-[#1A1E14] border border-[#282C20] flex items-center justify-center mx-auto text-[#D2FF00]">
-              <Sparkles className="w-6 h-6" />
+          <div className="p-8 sm:p-12 bg-neutral-950 border border-white/10 rounded-2xl text-center space-y-6">
+            <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-white">
+              <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold font-sans uppercase tracking-tight text-[#EBEEE0]">
+              <h3 className="text-xl font-semibold font-display uppercase tracking-tight text-white">
                 Multimodal Retrieval Console
               </h3>
-              <p className="text-xs sm:text-sm text-[#A5A89C] mt-1.5 max-w-lg mx-auto leading-relaxed">
+              <p className="text-xs sm:text-sm text-neutral-400 mt-2 max-w-lg mx-auto leading-relaxed font-sans">
                 Query indexed videos with spoken speech transcription and visual keyframe vectors.
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2 text-left">
-              <div className="p-3.5 rounded-xl bg-[#0B0C0A] border border-[#22271C] text-xs">
-                <span className="font-mono text-[#D2FF00] text-[10px] block mb-1">01 / CALIBRATION</span>
-                <span className="font-medium text-[#EBEEE0]">Score Fusion (&alpha;&middot;Text + &beta;&middot;Visual)</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-4 text-left font-mono text-xs">
+              <div className="p-4 rounded-xl bg-neutral-900/60 border border-white/5">
+                <span className="text-neutral-400 text-[10px] block mb-1 uppercase tracking-widest">01 / CALIBRATION</span>
+                <span className="font-medium text-white block">Score Fusion (&alpha;&middot;Text + &beta;&middot;Visual)</span>
               </div>
-              <div className="p-3.5 rounded-xl bg-[#0B0C0A] border border-[#22271C] text-xs">
-                <span className="font-mono text-[#D2FF00] text-[10px] block mb-1">02 / TEMPORAL</span>
-                <span className="font-medium text-[#EBEEE0]">Sliding Window Context Consolidation</span>
+              <div className="p-4 rounded-xl bg-neutral-900/60 border border-white/5">
+                <span className="text-neutral-400 text-[10px] block mb-1 uppercase tracking-widest">02 / TEMPORAL</span>
+                <span className="font-medium text-white block">Sliding Window Context Consolidation</span>
               </div>
-              <div className="p-3.5 rounded-xl bg-[#0B0C0A] border border-[#22271C] text-xs">
-                <span className="font-mono text-[#D2FF00] text-[10px] block mb-1">03 / VISION</span>
-                <span className="font-medium text-[#EBEEE0]">Consecutive Frame Clustering</span>
+              <div className="p-4 rounded-xl bg-neutral-900/60 border border-white/5">
+                <span className="text-neutral-400 text-[10px] block mb-1 uppercase tracking-widest">03 / VISION</span>
+                <span className="font-medium text-white block">Consecutive Frame Clustering</span>
               </div>
-              <div className="p-3.5 rounded-xl bg-[#0B0C0A] border border-[#22271C] text-xs">
-                <span className="font-mono text-[#D2FF00] text-[10px] block mb-1">04 / FAISS</span>
-                <span className="font-medium text-[#EBEEE0]">Dual Vector Cosine Indexing</span>
+              <div className="p-4 rounded-xl bg-neutral-900/60 border border-white/5">
+                <span className="text-neutral-400 text-[10px] block mb-1 uppercase tracking-widest">04 / FAISS</span>
+                <span className="font-medium text-white block">Dual Vector Cosine Indexing</span>
               </div>
             </div>
           </div>

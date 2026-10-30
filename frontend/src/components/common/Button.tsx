@@ -21,27 +21,27 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-center font-medium tracking-wide uppercase font-sans transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D2FF00] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer select-none';
+    'inline-flex items-center justify-center font-medium tracking-tight font-sans transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer select-none rounded-full';
 
   const sizeStyles = {
-    sm: 'text-[11px] px-3 py-1.5 gap-1.5 rounded-lg tracking-wider font-semibold',
-    md: 'text-xs px-4 py-2 gap-2 rounded-xl font-bold tracking-wider',
-    lg: 'text-xs sm:text-sm px-6 py-3 gap-2.5 rounded-xl font-extrabold tracking-wider',
+    sm: 'text-xs px-3.5 py-1.5 gap-1.5',
+    md: 'text-xs sm:text-sm px-5 py-2 gap-2',
+    lg: 'text-sm sm:text-base px-6 py-2.5 gap-2.5',
   };
 
   const variantStyles = {
     primary:
-      'bg-[#D2FF00] hover:bg-[#b8e000] text-[#0B0C0A] active:scale-[0.98]',
+      'bg-white text-black hover:bg-neutral-200 active:scale-[0.98] shadow-sm',
     lime:
-      'bg-[#D2FF00] hover:bg-[#b8e000] text-[#0B0C0A] active:scale-[0.98]',
+      'bg-white text-black hover:bg-neutral-200 active:scale-[0.98] shadow-sm',
     secondary:
-      'bg-[#12140F] hover:bg-[#1A1E14] text-[#EBEEE0] border border-[#282C20] hover:border-[#38402A] active:scale-[0.98]',
+      'bg-neutral-900/90 text-white border border-white/10 hover:border-white/20 hover:bg-neutral-800 active:scale-[0.98]',
     outline:
-      'border border-[#282C20] hover:border-[#D2FF00] bg-transparent text-[#EBEEE0] hover:text-[#D2FF00] active:scale-[0.98]',
+      'border border-white/15 bg-transparent text-white hover:border-white/40 hover:bg-white/5 active:scale-[0.98]',
     danger:
-      'bg-rose-950/60 hover:bg-rose-900/80 text-rose-200 border border-rose-800/60 shadow-sm active:scale-[0.98]',
+      'bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/50 active:scale-[0.98]',
     ghost:
-      'hover:bg-[#12140F] text-[#A5A89C] hover:text-[#EBEEE0]',
+      'hover:bg-white/5 text-neutral-400 hover:text-white',
   };
 
   return (

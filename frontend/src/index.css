@@ -1,38 +1,45 @@
 @import "tailwindcss";
 
-/* 1. Explicit Typography Utilities */
+/* 1. Miles Typography Utilities (Geist Display + Inter Body + JetBrains Mono) */
 .font-display {
-  font-family: 'Syne', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-family: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  letter-spacing: -0.035em;
 }
 
 .font-editorial {
-  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-family: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  letter-spacing: -0.025em;
 }
 
 .font-sans {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 .font-mono {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace !important;
 }
 
-/* 2. Global Document Setup */
+/* 2. Global Document Setup - Pure Obsidian Palette */
 :root {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color-scheme: dark;
+  --bg-obsidian: #000000;
+  --bg-surface: #0a0a0a;
+  --bg-surface-elevated: #111111;
+  --border-hairline: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.06);
 }
 
 html {
-  background-color: #0B0C0A;
-  color: #EBEEE0;
+  background-color: #000000;
+  color: #ffffff;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: #0B0C0A;
-  color: #EBEEE0;
+  background-color: #000000;
+  color: #ffffff;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -43,7 +50,7 @@ body {
   flex-direction: column;
 }
 
-/* 3. Lenis Smooth Scroll Rules */
+/* 3. Lenis Smooth Scroll Integration */
 html.lenis,
 html.lenis body {
   height: auto;
@@ -65,23 +72,23 @@ html.lenis body {
   pointer-events: none;
 }
 
-/* 4. Custom Architectural Scrollbars */
+/* 4. Minimal Architectural Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B0C0A;
+  background: #000000;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #282C20;
-  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3E4631;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* 5. Clipping Mask Container */
@@ -90,7 +97,7 @@ html.lenis body {
   display: block;
 }
 
-/* 6. Initial Hero Line-by-Line Reveals (Deterministic, GPU-accelerated) */
+/* 6. Hero Text Reveals (GPU-accelerated upward slide from clipping mask) */
 @keyframes heroRevealUp {
   0% {
     transform: translateY(115%);
@@ -112,7 +119,7 @@ html.lenis body {
 
 .hero-reveal-2 {
   animation: heroRevealUp 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.22s;
+  animation-delay: 0.2s;
   will-change: transform, opacity;
   transform: translateY(115%);
   opacity: 0;
@@ -120,7 +127,7 @@ html.lenis body {
 
 .hero-reveal-3 {
   animation: heroRevealUp 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.38s;
+  animation-delay: 0.34s;
   will-change: transform, opacity;
   transform: translateY(115%);
   opacity: 0;
@@ -128,7 +135,7 @@ html.lenis body {
 
 .hero-reveal-4 {
   animation: heroRevealUp 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.54s;
+  animation-delay: 0.48s;
   will-change: transform, opacity;
   transform: translateY(115%);
   opacity: 0;
@@ -136,31 +143,63 @@ html.lenis body {
 
 .hero-reveal-5 {
   animation: heroRevealUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.68s;
+  animation-delay: 0.62s;
   will-change: transform, opacity;
   transform: translateY(115%);
   opacity: 0;
 }
 
-/* 7. Fine Architectural Borders */
+/* 7. Continuous Restrained Ticker / Marquee Animation */
+@keyframes tickerSlide {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: tickerSlide 35s linear infinite;
+  will-change: transform;
+}
+
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
+/* 8. Miles Aesthetic Utilities */
+.border-hairline {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
 .border-subtle {
-  border-color: #22271C;
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
-.border-olive {
-  border-color: #282C20;
+.bg-surface {
+  background-color: #0a0a0a;
 }
 
-/* 8. Reduced Motion Overrides */
+.bg-surface-elevated {
+  background-color: #121212;
+}
+
+/* 9. Accessible Reduced Motion Overrides */
 @media (prefers-reduced-motion: reduce) {
   .hero-reveal-1,
   .hero-reveal-2,
   .hero-reveal-3,
   .hero-reveal-4,
   .hero-reveal-5 {
-    animation-duration: 0.35s !important;
+    animation-duration: 0.2s !important;
     animation-delay: 0s !important;
     transform: translateY(0%) !important;
     opacity: 1 !important;
+  }
+  .ticker-track {
+    animation: none !important;
   }
 }

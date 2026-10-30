@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import type { HealthResponse } from '../types';
-import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -44,17 +43,17 @@ export const SystemHealthPage: React.FC<SystemHealthPageProps> = ({
   const currentHealth = health || initialHealth;
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-6 border-b border-[#22271C]">
-        <div>
-          <span className="font-mono text-xs uppercase tracking-widest text-[#D2FF00] block mb-2">
+    <div className="space-y-12 max-w-7xl mx-auto">
+      {/* 1. Header (Miles Works Header Style) */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-6 border-b border-white/10">
+        <div className="space-y-2">
+          <span className="font-mono text-xs uppercase tracking-widest text-neutral-400 block">
             System Telemetry
           </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold font-display uppercase tracking-tight text-[#EBEEE0]">
-            Diagnostics
+          <h1 className="text-3xl sm:text-5xl font-semibold font-display uppercase tracking-tight text-white">
+            Diagnostics ( 24-26 )
           </h1>
-          <p className="text-xs sm:text-sm text-[#A5A89C] mt-1.5">
+          <p className="text-xs sm:text-sm text-neutral-400 max-w-xl font-sans">
             Real-time status of backend services, media processing binaries, and hardware inference devices.
           </p>
         </div>
@@ -75,113 +74,154 @@ export const SystemHealthPage: React.FC<SystemHealthPageProps> = ({
         <LoadingSpinner label="Querying backend telemetry..." />
       ) : currentHealth ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Service Status */}
-          <Card title="Backend Service" subtitle="FastAPI Core Application">
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-xs text-[#A5A89C]">Server Status</span>
+          {/* Card 1: Backend Service Status */}
+          <div className="bg-neutral-950 border border-white/10 rounded-2xl p-6 sm:p-7 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div>
+                <h3 className="text-base font-semibold font-display uppercase text-white tracking-tight">
+                  Backend Service
+                </h3>
+                <p className="text-xs text-neutral-400 font-sans mt-0.5">FastAPI Core Application</p>
+              </div>
               <Badge variant={currentHealth.status === 'healthy' ? 'lime' : 'danger'} dot>
                 {currentHealth.status}
               </Badge>
             </div>
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-xs text-[#A5A89C]">Version</span>
-              <span className="text-xs font-mono font-medium text-[#EBEEE0]">{currentHealth.version}</span>
+
+            <div className="space-y-3 text-xs font-mono">
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-400">Server Status</span>
+                <span className="text-white font-medium capitalize">{currentHealth.status}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-400">Version</span>
+                <span className="text-white font-medium">{currentHealth.version}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-400">Environment</span>
+                <span className="text-white font-medium">{currentHealth.environment}</span>
+              </div>
             </div>
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-xs text-[#A5A89C]">Environment</span>
-              <span className="text-xs font-mono text-[#EBEEE0]">{currentHealth.environment}</span>
-            </div>
+
             {latency !== null && (
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#22271C]">
-                <span className="text-xs text-[#A5A89C]">Round-trip Ping</span>
-                <span className="text-xs font-mono text-[#D2FF00] font-bold">{latency} ms</span>
+              <div className="flex items-center justify-between pt-3 border-t border-white/10 text-xs font-mono">
+                <span className="text-neutral-400">Round-trip Ping</span>
+                <span className="text-white font-bold">{latency} ms</span>
               </div>
             )}
-          </Card>
+          </div>
 
-          {/* Media Decoder */}
-          <Card title="Media Decoder" subtitle="FFmpeg & FFprobe Demuxing">
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-xs text-[#A5A89C]">FFmpeg Detection</span>
+          {/* Card 2: Media Decoder */}
+          <div className="bg-neutral-950 border border-white/10 rounded-2xl p-6 sm:p-7 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div>
+                <h3 className="text-base font-semibold font-display uppercase text-white tracking-tight">
+                  Media Decoder
+                </h3>
+                <p className="text-xs text-neutral-400 font-sans mt-0.5">FFmpeg & FFprobe Pipeline</p>
+              </div>
               {currentHealth.ffmpeg_available ? (
-                <Badge variant="lime" dot>Available in PATH</Badge>
+                <Badge variant="lime" dot>Available</Badge>
               ) : (
-                <Badge variant="danger" dot>Not Detected</Badge>
+                <Badge variant="danger" dot>Missing</Badge>
               )}
             </div>
-            <div className="mt-4 p-3.5 rounded-xl bg-[#0B0C0A] border border-[#22271C] text-xs text-[#A5A89C] flex items-start gap-3">
-              <Film className="w-4 h-4 text-[#D2FF00] shrink-0 mt-0.5" />
-              <span className="leading-relaxed">
+
+            <div className="p-3.5 rounded-xl bg-neutral-900/60 border border-white/5 text-xs text-neutral-300 flex items-start gap-3">
+              <Film className="w-4 h-4 text-white shrink-0 mt-0.5" />
+              <span className="leading-relaxed font-sans">
                 {currentHealth.ffmpeg_available
-                  ? 'FFmpeg is available for metadata extraction, 16kHz audio separation, and keyframe sampling.'
-                  : 'FFmpeg CLI was not detected. Audio extraction and frame generation require FFmpeg in PATH.'}
+                  ? 'FFmpeg is available in system PATH for container demuxing, 16kHz audio separation, and 1 FPS keyframe extraction.'
+                  : 'FFmpeg was not detected in PATH. Audio separation and visual keyframe extraction require FFmpeg.'}
               </span>
             </div>
-          </Card>
+          </div>
 
-          {/* Hardware Acceleration */}
-          <Card title="Compute Device" subtitle="PyTorch & Inference Engine">
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-xs text-[#A5A89C]">CUDA Acceleration</span>
+          {/* Card 3: Hardware Acceleration */}
+          <div className="bg-neutral-950 border border-white/10 rounded-2xl p-6 sm:p-7 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div>
+                <h3 className="text-base font-semibold font-display uppercase text-white tracking-tight">
+                  Compute Device
+                </h3>
+                <p className="text-xs text-neutral-400 font-sans mt-0.5">PyTorch Inference Runtime</p>
+              </div>
               {currentHealth.cuda_available ? (
                 <Badge variant="lime" dot>CUDA Active</Badge>
               ) : (
                 <Badge variant="neutral" dot>CPU Fallback</Badge>
               )}
             </div>
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-xs text-[#A5A89C]">Device Identifier</span>
-              <span className="text-xs font-mono font-medium text-[#D2FF00] max-w-[180px] truncate text-right">
+
+            <div className="flex items-center justify-between text-xs font-mono">
+              <span className="text-neutral-400">Device Target</span>
+              <span className="text-white font-medium max-w-[180px] truncate text-right">
                 {currentHealth.device}
               </span>
             </div>
-            <div className="mt-4 p-3.5 rounded-xl bg-[#0B0C0A] border border-[#22271C] text-xs text-[#A5A89C] flex items-start gap-3">
-              <Cpu className="w-4 h-4 text-[#D2FF00] shrink-0 mt-0.5" />
-              <span className="leading-relaxed">
+
+            <div className="p-3.5 rounded-xl bg-neutral-900/60 border border-white/5 text-xs text-neutral-300 flex items-start gap-3">
+              <Cpu className="w-4 h-4 text-white shrink-0 mt-0.5" />
+              <span className="leading-relaxed font-sans">
                 {currentHealth.cuda_available
-                  ? 'Hardware acceleration enabled for Faster-Whisper transcription and CLIP vision embedding.'
+                  ? 'CUDA GPU acceleration enabled for Faster-Whisper speech extraction and CLIP ViT-B/32 image embeddings.'
                   : 'Operating in CPU fallback mode for model inference.'}
               </span>
             </div>
-          </Card>
+          </div>
         </div>
       ) : (
-        <Card>
-          <div className="flex items-center justify-center p-8 text-[#A5A89C] text-sm font-mono">
-            Cannot reach backend API. Ensure the FastAPI backend server is running on port 8000.
-          </div>
-        </Card>
+        <div className="bg-neutral-950 border border-white/10 rounded-2xl p-8 text-center text-neutral-400 text-sm font-mono">
+          Cannot reach backend API. Ensure the FastAPI backend server is running on port 8000.
+        </div>
       )}
 
-      {/* Architecture Infrastructure Overview */}
-      <Card title="Architecture Summary" subtitle="Components and Dependencies">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs mt-2">
-          <div className="p-4 rounded-xl bg-[#0B0C0A] border border-[#22271C]">
-            <span className="text-[#A5A89C] block mb-1 font-mono text-[10px] uppercase">Storage</span>
-            <span className="font-bold text-[#EBEEE0] flex items-center gap-1.5 uppercase">
-              <Server className="w-3.5 h-3.5 text-[#D2FF00]" /> SQLite + File Storage
+      {/* 2. Architecture Infrastructure Grid (Miles Capabilities Style) */}
+      <div className="bg-neutral-950 border border-white/10 rounded-2xl p-6 sm:p-8 space-y-6">
+        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+          <div>
+            <h3 className="text-base font-semibold font-display uppercase tracking-tight text-white">
+              Architecture Infrastructure
+            </h3>
+            <p className="text-xs text-neutral-400 mt-0.5 font-sans">
+              Core runtime components, storage backends, and embedding models.
+            </p>
+          </div>
+          <span className="text-xs font-mono text-neutral-400 uppercase tracking-widest">
+            Pipeline v1.0
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs font-mono">
+          <div className="p-4 rounded-xl bg-neutral-900/60 border border-white/5 space-y-1">
+            <span className="text-neutral-400 text-[10px] uppercase tracking-wider block">Storage</span>
+            <span className="font-semibold text-white flex items-center gap-1.5 uppercase">
+              <Server className="w-3.5 h-3.5 text-white" /> SQLite + Media
             </span>
           </div>
-          <div className="p-4 rounded-xl bg-[#0B0C0A] border border-[#22271C]">
-            <span className="text-[#A5A89C] block mb-1 font-mono text-[10px] uppercase">Speech Transcription</span>
-            <span className="font-bold text-[#EBEEE0] flex items-center gap-1.5 uppercase">
-              <Server className="w-3.5 h-3.5 text-[#D2FF00]" /> Faster-Whisper
+
+          <div className="p-4 rounded-xl bg-neutral-900/60 border border-white/5 space-y-1">
+            <span className="text-neutral-400 text-[10px] uppercase tracking-wider block">Speech Transcription</span>
+            <span className="font-semibold text-white flex items-center gap-1.5 uppercase">
+              <Server className="w-3.5 h-3.5 text-white" /> Faster-Whisper
             </span>
           </div>
-          <div className="p-4 rounded-xl bg-[#0B0C0A] border border-[#22271C]">
-            <span className="text-[#A5A89C] block mb-1 font-mono text-[10px] uppercase">Visual Representation</span>
-            <span className="font-bold text-[#EBEEE0] flex items-center gap-1.5 uppercase">
-              <Server className="w-3.5 h-3.5 text-[#D2FF00]" /> CLIP ViT-B/32
+
+          <div className="p-4 rounded-xl bg-neutral-900/60 border border-white/5 space-y-1">
+            <span className="text-neutral-400 text-[10px] uppercase tracking-wider block">Visual Representation</span>
+            <span className="font-semibold text-white flex items-center gap-1.5 uppercase">
+              <Server className="w-3.5 h-3.5 text-white" /> CLIP ViT-B/32
             </span>
           </div>
-          <div className="p-4 rounded-xl bg-[#0B0C0A] border border-[#22271C]">
-            <span className="text-[#A5A89C] block mb-1 font-mono text-[10px] uppercase">Vector Index</span>
-            <span className="font-bold text-[#EBEEE0] flex items-center gap-1.5 uppercase">
-              <Server className="w-3.5 h-3.5 text-[#D2FF00]" /> FAISS Inner Product
+
+          <div className="p-4 rounded-xl bg-neutral-900/60 border border-white/5 space-y-1">
+            <span className="text-neutral-400 text-[10px] uppercase tracking-wider block">Vector Index</span>
+            <span className="font-semibold text-white flex items-center gap-1.5 uppercase">
+              <Server className="w-3.5 h-3.5 text-white" /> FAISS Inner Product
             </span>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };
