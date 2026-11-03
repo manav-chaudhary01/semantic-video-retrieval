@@ -51,7 +51,7 @@ export const SystemHealthPage: React.FC<SystemHealthPageProps> = ({
             System Telemetry
           </span>
           <h1 className="text-3xl sm:text-5xl font-semibold font-display uppercase tracking-tight text-white">
-            Diagnostics ( 24-26 )
+            System Diagnostics
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 max-w-xl font-sans">
             Real-time status of backend services, media processing binaries, and hardware inference devices.
