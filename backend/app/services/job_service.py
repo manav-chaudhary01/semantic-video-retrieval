@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from backend.app.core.config import settings
 from backend.app.core.logging import logger
+from backend.app.core.exceptions import ProcessingError
 from backend.app.db.session import SessionLocal
 from backend.app.models.video import Video
 from backend.app.models.job import ProcessingJob
@@ -50,7 +51,7 @@ class JobService:
                 return
 
             if video_path is None and video.storage_path:
-                video_path = settings.get_absolute_path(video.storage_path)
+                video_path = settings.get_absolute_path(Path(video.storage_path))
 
             try:
                 # Stage 1: VALIDATING & PROBING (15%)
@@ -65,7 +66,16 @@ class JobService:
                 video.width = metadata.get("width")
                 video.height = metadata.get("height")
                 video.fps = metadata.get("fps")
-                video.has_audio = metadata.get("has_audio", False)
+
+                # Validate probe metadata contains valid boolean 'has_audio'
+                if "has_audio" not in metadata or type(metadata["has_audio"]) is not bool:
+                    raise ProcessingError(
+                        "VALIDATING",
+                        f"Probe metadata missing valid boolean 'has_audio' (got {metadata.get('has_audio')!r})",
+                    )
+
+                has_audio_val = metadata["has_audio"]
+                video.has_audio = True if has_audio_val is True else False
                 db.commit()
 
                 raw_segments = []

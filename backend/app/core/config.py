@@ -63,6 +63,15 @@ class Settings(BaseSettings):
     CHUNK_MAX_PAUSE_SEC: float = 2.0
     FRAME_SAMPLE_INTERVAL_SEC: float = 2.0
 
+    # Multimodal Score Calibration & Fusion Parameters
+    CALIBRATION_TEXT_LOWER: float = 0.25
+    CALIBRATION_TEXT_UPPER: float = 0.75
+    CALIBRATION_VISUAL_LOWER: float = 0.16
+    CALIBRATION_VISUAL_UPPER: float = 0.34
+    MISSING_MODALITY_DISCOUNT: float = 0.85
+    RAW_TEXT_SIMILARITY_FLOOR: float = 0.10
+    RAW_VISUAL_SIMILARITY_FLOOR: float = 0.10
+
     TEXT_INDEX_FILE: Path = Field(default=Path("data/indexes/text_faiss.index"))
     TEXT_ID_MAP_FILE: Path = Field(default=Path("data/indexes/text_id_map.json"))
     VISUAL_INDEX_FILE: Path = Field(default=Path("data/indexes/visual_faiss.index"))

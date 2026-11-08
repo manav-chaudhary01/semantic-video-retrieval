@@ -52,6 +52,7 @@ data/temp/*
 
 # ML Model Cache
 models/
+!backend/app/models/
 model_cache/
 .cache/
 

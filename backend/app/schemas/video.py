@@ -24,7 +24,7 @@ class VideoResponse(BaseModel):
     fps: Optional[float] = None
     file_size: int
     mime_type: Optional[str] = None
-    has_audio: bool
+    has_audio: Optional[bool] = None
     status: str
     error_message: Optional[str] = None
     created_at: datetime

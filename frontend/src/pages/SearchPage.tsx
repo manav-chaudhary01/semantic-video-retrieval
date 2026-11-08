@@ -32,6 +32,69 @@ function formatDuration(seconds?: number | null): string {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
+interface ScoreDisplayInfo {
+  badgeLabel: string;
+  badgeStyle: string;
+  footerLabel: string;
+}
+
+function getScoreDisplay(
+  result: SearchResult,
+  fusionMethod?: string | null,
+  searchModality?: string
+): ScoreDisplayInfo {
+  const method = fusionMethod?.toLowerCase();
+
+  // 1. RRF multimodal results: Display as "RRF Rank Score: 0.XXXX"
+  if (method === 'rrf') {
+    const formattedScore = result.score.toFixed(4);
+    return {
+      badgeLabel: `RRF Rank Score: ${formattedScore}`,
+      badgeStyle: 'bg-white/10 text-white border-white/20',
+      footerLabel: `RRF Rank Score: ${formattedScore}`,
+    };
+  }
+
+  // 2. Linear multimodal results: Display as "Match Score: XX%"
+  if (method === 'linear' || (searchModality === 'multimodal' && method !== 'rrf')) {
+    const matchPercent = Math.round(Math.max(0, Math.min(1, result.score)) * 100);
+    const badgeStyle =
+      matchPercent >= 60
+        ? 'bg-white/10 text-white border-white/25'
+        : matchPercent >= 40
+        ? 'bg-amber-950/40 text-amber-300 border-amber-800/40'
+        : 'bg-neutral-900 text-neutral-400 border-white/10';
+
+    return {
+      badgeLabel: `Match Score: ${matchPercent}%`,
+      badgeStyle,
+      footerLabel: `Match Score: ${matchPercent}%`,
+    };
+  }
+
+  // 3. Single-modality results: Explicitly label as "Raw Cosine Similarity"
+  const formattedScore = result.score.toFixed(4);
+  const badgeStyle =
+    result.score >= 0.5
+      ? 'bg-white/10 text-white border-white/25'
+      : result.score >= 0.3
+      ? 'bg-amber-950/40 text-amber-300 border-amber-800/40'
+      : 'bg-neutral-900 text-neutral-400 border-white/10';
+
+  return {
+    badgeLabel: `Raw Cosine Similarity: ${formattedScore}`,
+    badgeStyle,
+    footerLabel: `Raw Cosine Similarity: ${formattedScore}`,
+  };
+}
+
+function formatModalityLabel(modality?: string, fallbackModality?: string): 'TEXT' | 'VISUAL' | 'MULTIMODAL' {
+  const mod = (modality || fallbackModality || 'text').toUpperCase();
+  if (mod === 'MULTIMODAL') return 'MULTIMODAL';
+  if (mod === 'VISUAL') return 'VISUAL';
+  return 'TEXT';
+}
+
 const TEXT_EXAMPLE_QUERIES = [
   'neural network backpropagation and weights',
   'gradient descent optimization algorithms',
@@ -458,7 +521,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                 {activeResult && (
                   <div className="flex items-center gap-2 shrink-0">
                     <Badge variant="lime" size="sm">
-                      {activeResult.modality}
+                      {formatModalityLabel(activeResult.modality, searchResponse?.modality)}
                     </Badge>
                     <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-black text-white border border-white/15">
                       {formatDuration(activeResult.start_time)} - {formatDuration(activeResult.end_time)}
@@ -527,20 +590,25 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                       </div>
                     )}
                     <div className="flex-1 min-w-0 space-y-2">
-                      {activeResult.modality === 'multimodal' && (
-                        <div className="flex items-center gap-2 text-[11px] font-mono">
-                          {activeResult.text_score !== undefined && activeResult.text_score !== null && (
-                            <span className="bg-neutral-900 px-2.5 py-0.5 rounded-full border border-white/10 text-neutral-300">
-                              Speech: <span className="text-white font-bold">{Math.round(activeResult.text_score * 100)}%</span>
-                            </span>
-                          )}
-                          {activeResult.visual_score !== undefined && activeResult.visual_score !== null && (
-                            <span className="bg-neutral-900 px-2.5 py-0.5 rounded-full border border-white/10 text-neutral-300">
-                              Visual: <span className="text-white font-bold">{Math.round(activeResult.visual_score * 100)}%</span>
-                            </span>
-                          )}
-                        </div>
-                      )}
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
+                        <span className="bg-neutral-900 px-2.5 py-0.5 rounded-full border border-white/10 text-neutral-300">
+                          {getScoreDisplay(activeResult, searchResponse?.fusion_method, searchResponse?.modality).badgeLabel}
+                        </span>
+                        {activeResult.modality === 'multimodal' && (
+                          <>
+                            {activeResult.text_score !== undefined && activeResult.text_score !== null && (
+                              <span className="bg-neutral-900 px-2.5 py-0.5 rounded-full border border-white/10 text-neutral-300">
+                                Speech Cosine: <span className="text-white font-bold">{activeResult.text_score.toFixed(4)}</span>
+                              </span>
+                            )}
+                            {activeResult.visual_score !== undefined && activeResult.visual_score !== null && (
+                              <span className="bg-neutral-900 px-2.5 py-0.5 rounded-full border border-white/10 text-neutral-300">
+                                Visual Cosine: <span className="text-white font-bold">{activeResult.visual_score.toFixed(4)}</span>
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </div>
                       <p className="text-xs sm:text-sm text-neutral-200 bg-neutral-900/60 p-3.5 rounded-xl border border-white/5 leading-relaxed font-sans">
                         {activeResult.modality === 'visual' ? (
                           <span className="flex items-center gap-2 text-neutral-200">
@@ -573,7 +641,12 @@ export const SearchPage: React.FC<SearchPageProps> = ({
               {searchResponse.results.map((result, idx) => {
                 const resultKey = getResultKey(result);
                 const isActive = activeResult ? getResultKey(activeResult) === resultKey : false;
-                const scorePercent = result.confidence_percent ?? Math.round(result.score * 100);
+                const scoreDisplay = getScoreDisplay(
+                  result,
+                  searchResponse.fusion_method,
+                  searchResponse.modality
+                );
+                const modalityLabel = formatModalityLabel(result.modality, searchResponse.modality);
 
                 return (
                   <div
@@ -601,15 +674,9 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                           {formatDuration(result.start_time)}
                         </span>
                         <span
-                          className={`text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full border ${
-                            scorePercent >= 60
-                              ? 'bg-white/10 text-white border-white/25'
-                              : scorePercent >= 40
-                              ? 'bg-amber-950/40 text-amber-300 border-amber-800/40'
-                              : 'bg-neutral-900 text-neutral-400 border-white/10'
-                          }`}
+                          className={`text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full border ${scoreDisplay.badgeStyle}`}
                         >
-                          {scorePercent}% MATCH
+                          {scoreDisplay.badgeLabel}
                         </span>
                       </div>
                     </div>
@@ -631,15 +698,15 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
                           <span className="text-[10px] uppercase font-mono font-semibold px-2 py-0.5 rounded-full bg-neutral-900 text-neutral-400 border border-white/10">
-                            {result.modality}
+                            {modalityLabel}
                           </span>
                           {result.modality === 'multimodal' && (
                             <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 font-mono">
-                              {result.text_score !== undefined && (
-                                <span>Speech: {Math.round(result.text_score * 100)}%</span>
+                              {result.text_score !== undefined && result.text_score !== null && (
+                                <span>Speech Cosine: {result.text_score.toFixed(4)}</span>
                               )}
-                              {result.visual_score !== undefined && (
-                                <span>&bull; Visual: {Math.round(result.visual_score * 100)}%</span>
+                              {result.visual_score !== undefined && result.visual_score !== null && (
+                                <span>&bull; Visual Cosine: {result.visual_score.toFixed(4)}</span>
                               )}
                             </div>
                           )}
@@ -654,7 +721,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
 
                     <div className="flex items-center justify-between pt-3 border-t border-white/10 text-[11px] font-mono">
                       <span className="text-neutral-400">
-                        Cosine Score: {result.score.toFixed(4)}
+                        {scoreDisplay.footerLabel}
                       </span>
                       <Button
                         size="sm"

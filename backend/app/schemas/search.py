@@ -39,3 +39,4 @@ class SearchResponse(BaseModel):
     total_results: int
     results: List[SearchResultItem]
     latency_ms: float
+    fusion_method: Optional[str] = Field(None, description="Applied fusion method for multimodal retrieval ('linear', 'rrf', or None)")

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Dict, Tuple
 import math
 
+from backend.app.core.config import settings
 from backend.app.schemas.search import SearchResultItem
 
 
@@ -16,6 +17,8 @@ class TextMatch:
     raw_score: float
     normalized_score: float = 0.0
     rank: int = 0
+    has_audio: Optional[bool] = None
+    video_status: str = "READY"
 
 
 @dataclass
@@ -28,26 +31,53 @@ class VisualMatch:
     raw_score: float
     normalized_score: float = 0.0
     rank: int = 0
+    has_audio: Optional[bool] = None
+    video_status: str = "READY"
 
 
 class TemporalConsolidator:
     """Consolidates cross-modal evidence and merges adjacent temporal moments."""
 
     @staticmethod
-    def normalize_min_max(scores: List[float]) -> List[float]:
-        """Performs min-max score calibration over candidate matches so cross-modal scales are comparable."""
+    def calibrate_score(raw_score: float, lower_bound: float, upper_bound: float) -> float:
+        """Clamps and scales raw cosine similarity to [0.0, 1.0] using fixed bounds.
+
+        Formula: clamp((raw_score - lower_bound) / (upper_bound - lower_bound), 0.0, 1.0)
+        """
+        if upper_bound <= lower_bound:
+            return 0.0
+        return max(0.0, min(1.0, (raw_score - lower_bound) / (upper_bound - lower_bound)))
+
+    @classmethod
+    def calibrate_text_score(cls, raw_score: float) -> float:
+        """Calibrates text embedding cosine similarity (all-MiniLM-L6-v2) using fixed bounds."""
+        return cls.calibrate_score(
+            raw_score,
+            settings.CALIBRATION_TEXT_LOWER,
+            settings.CALIBRATION_TEXT_UPPER,
+        )
+
+    @classmethod
+    def calibrate_visual_score(cls, raw_score: float) -> float:
+        """Calibrates visual embedding cosine similarity (CLIP ViT-B-32) using fixed bounds."""
+        return cls.calibrate_score(
+            raw_score,
+            settings.CALIBRATION_VISUAL_LOWER,
+            settings.CALIBRATION_VISUAL_UPPER,
+        )
+
+    @classmethod
+    def normalize_min_max(cls, scores: List[float], modality: str = "text") -> List[float]:
+        """Fixed-range calibration wrapper for candidate scores.
+
+        Preserves backward compatibility with existing callers while enforcing
+        independent, fixed-range clamping rather than per-query relative stretching.
+        """
         if not scores:
             return []
-        if len(scores) == 1:
-            return [1.0]
-
-        s_min = min(scores)
-        s_max = max(scores)
-        span = s_max - s_min
-        if span < 1e-6:
-            return [1.0] * len(scores)
-
-        return [(s - s_min) / span for s in scores]
+        if modality == "visual":
+            return [cls.calibrate_visual_score(s) for s in scores]
+        return [cls.calibrate_text_score(s) for s in scores]
 
     def deduplicate_frames(
         self,
@@ -55,7 +85,7 @@ class TemporalConsolidator:
         cluster_radius_sec: float = 4.0,
     ) -> List[VisualMatch]:
         """Clusters consecutive frames from the same video within cluster_radius_sec, retaining the peak match.
-        
+
         Prevents multiple neighboring frames from the same 2-second sampling interval
         from dominating the top-K retrieved list.
         """
@@ -119,26 +149,28 @@ class TemporalConsolidator:
         w_text = alpha / total_w
         w_visual = beta / total_w
 
-        # 2. Assign ranks
-        for i, tm in enumerate(text_matches):
-            tm.rank = i + 1
-        for i, vm in enumerate(visual_matches):
-            vm.rank = i + 1
-
-        # 3. Calibrate scores
-        if text_matches:
-            norm_t = self.normalize_min_max([m.raw_score for m in text_matches])
-            for m, s in zip(text_matches, norm_t):
-                m.normalized_score = s
+        # 2. Stage 2: Independent score calibration
+        for tm in text_matches:
+            tm.normalized_score = self.calibrate_text_score(tm.raw_score)
 
         # Deduplicate consecutive visual frames to avoid redundant clusters
         deduped_visual = self.deduplicate_frames(visual_matches, cluster_radius_sec=frame_interval_sec * 2.0)
-        if deduped_visual:
-            norm_v = self.normalize_min_max([m.raw_score for m in deduped_visual])
-            for m, s in zip(deduped_visual, norm_v):
-                m.normalized_score = s
+        for vm in deduped_visual:
+            vm.normalized_score = self.calibrate_visual_score(vm.raw_score)
 
-        # 4. Cross-modal temporal pairing
+        # 3. Candidate eligibility filtering for RRF
+        # In RRF mode, filter candidate eligibility by calibrated score threshold BEFORE ranking
+        if fusion_method == "rrf" and threshold is not None:
+            text_matches = [m for m in text_matches if m.normalized_score >= threshold]
+            deduped_visual = [m for m in deduped_visual if m.normalized_score >= threshold]
+
+        # 4. Assign ranks
+        for i, tm in enumerate(text_matches):
+            tm.rank = i + 1
+        for i, vm in enumerate(deduped_visual):
+            vm.rank = i + 1
+
+        # 5. Stage 3 & 4: Cross-modal temporal pairing and consolidation
         matched_visual_ids = set()
         matched_text_ids = set()
         fused_items: List[SearchResultItem] = []
@@ -173,7 +205,7 @@ class TemporalConsolidator:
                     # Scale RRF score to 0..1 for UI display
                     confidence = round(min(1.0, fused_score * 30.0) * 100, 1)
                 else:
-                    # Calibrated linear score fusion
+                    # Calibrated linear score fusion: w_text * s_text + w_visual * s_visual
                     fused_score = w_text * tm.normalized_score + w_visual * best_visual.normalized_score
                     confidence = round(max(0.0, min(1.0, fused_score)) * 100, 1)
 
@@ -201,16 +233,21 @@ class TemporalConsolidator:
                     )
                 )
 
-        # 5. Include remaining text-only candidates (no co-occurring visual match)
+        # 6. Unpaired text-only candidates (no co-occurring visual match)
         for tm in text_matches:
             if tm.segment_id in matched_text_ids:
                 continue
+
+            # Missing-modality policy for unpaired text:
+            # Video frames are always present in indexed video assets;
+            # since no visual match co-occurred, apply configurable missing-modality discount.
+            discount = settings.MISSING_MODALITY_DISCOUNT
 
             if fusion_method == "rrf":
                 score = w_text * (1.0 / (60.0 + tm.rank))
                 confidence = round(min(1.0, score * 30.0) * 100, 1)
             else:
-                score = w_text * tm.normalized_score
+                score = tm.normalized_score * discount
                 confidence = round(max(0.0, min(1.0, score)) * 100, 1)
 
             fused_items.append(
@@ -234,16 +271,24 @@ class TemporalConsolidator:
                 )
             )
 
-        # 6. Include remaining visual-only candidates (no co-occurring dialogue)
+        # 7. Unpaired visual-only candidates (no co-occurring dialogue)
         for vm in deduped_visual:
             if vm.frame_id in matched_visual_ids:
                 continue
+
+            # Missing-modality policy for unpaired visual:
+            # If the video genuinely has no audio and is fully indexed (READY), apply no penalty (discount=1.0).
+            # Otherwise (audio was present or processing incomplete), apply discount.
+            if vm.has_audio is False and vm.video_status == "READY":
+                discount = 1.0
+            else:
+                discount = settings.MISSING_MODALITY_DISCOUNT
 
             if fusion_method == "rrf":
                 score = w_visual * (1.0 / (60.0 + vm.rank))
                 confidence = round(min(1.0, score * 30.0) * 100, 1)
             else:
-                score = w_visual * vm.normalized_score
+                score = vm.normalized_score * discount
                 confidence = round(max(0.0, min(1.0, score)) * 100, 1)
 
             fused_items.append(
@@ -267,15 +312,14 @@ class TemporalConsolidator:
                 )
             )
 
-        # 7. Sort by fused score descending
+        # 8. Sort by fused score descending
         fused_items.sort(key=lambda x: x.score, reverse=True)
 
-        # 8. Apply threshold filter if specified
-        if threshold is not None:
-            if fusion_method == "rrf":
-                fused_items = [item for item in fused_items if (item.confidence_percent / 100.0) >= threshold]
-            else:
-                fused_items = [item for item in fused_items if item.score >= threshold]
+        # 9. Stage 5: User-facing threshold filtering
+        # For linear fusion: filter by fused score.
+        # For RRF: candidate eligibility was evaluated prior to RRF; do not filter RRF score by threshold.
+        if threshold is not None and fusion_method != "rrf":
+            fused_items = [item for item in fused_items if item.score >= threshold]
 
         return fused_items[:top_k]
 

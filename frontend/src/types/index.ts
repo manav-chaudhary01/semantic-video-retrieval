@@ -29,7 +29,7 @@ export interface Video {
   fps?: number | null;
   file_size: number;
   mime_type?: string | null;
-  has_audio: boolean;
+  has_audio?: boolean | null;
   status: VideoStatus;
   error_message?: string | null;
   created_at: string;
@@ -79,6 +79,7 @@ export interface SearchResponse {
   total_results: number;
   results: SearchResult[];
   latency_ms?: number;
+  fusion_method?: 'linear' | 'rrf' | string | null;
 }
 
 export interface TranscriptSegment {

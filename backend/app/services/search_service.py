@@ -66,7 +66,7 @@ class SearchService:
 
         # 2. Query FAISS index for candidate nearest segments
         candidate_k = min(
-            max(req.top_k * 10 if req.video_id else req.top_k * 3, 20),
+            max(req.top_k * 20 if req.video_id else req.top_k * 3, 50 if req.video_id else 20),
             text_vector_index.total_vectors,
         )
         raw_matches = text_vector_index.search(query_vector, top_k=candidate_k)
@@ -155,7 +155,7 @@ class SearchService:
 
         # 2. Query visual FAISS index
         candidate_k = min(
-            max(req.top_k * 10 if req.video_id else req.top_k * 3, 20),
+            max(req.top_k * 20 if req.video_id else req.top_k * 3, 50 if req.video_id else 20),
             visual_vector_index.total_vectors,
         )
         raw_matches = visual_vector_index.search(query_vector, top_k=candidate_k)
@@ -247,12 +247,12 @@ class SearchService:
         if text_vector_index.total_vectors > 0 and req.alpha > 0.0:
             query_vector_text = text_embedder.embed_texts([query_text])[0]
             cand_k_text = min(
-                max(req.top_k * 10 if req.video_id else req.top_k * 5, 25),
+                max(req.top_k * 20 if req.video_id else req.top_k * 5, 50 if req.video_id else 25),
                 text_vector_index.total_vectors,
             )
             raw_text = text_vector_index.search(query_vector_text, top_k=cand_k_text)
-            if req.threshold is not None and raw_text:
-                raw_text = [(sid, s) for sid, s in raw_text if s >= req.threshold]
+            if raw_text:
+                raw_text = [(sid, s) for sid, s in raw_text if s >= settings.RAW_TEXT_SIMILARITY_FLOOR]
             if raw_text:
                 candidate_ids = [seg_id for seg_id, _ in raw_text]
                 q_text = (
@@ -268,6 +268,8 @@ class SearchService:
                     if seg_id in segments_by_id:
                         seg = segments_by_id[seg_id]
                         v_title = seg.video.original_filename if seg.video else "Unknown Video"
+                        v_has_audio = seg.video.has_audio if seg.video else True
+                        v_status = seg.video.status if seg.video else "READY"
                         text_matches.append(
                             TextMatch(
                                 segment_id=seg.id,
@@ -277,6 +279,8 @@ class SearchService:
                                 end_time=seg.end_time,
                                 text=seg.text,
                                 raw_score=score,
+                                has_audio=v_has_audio,
+                                video_status=v_status,
                             )
                         )
 
@@ -284,12 +288,12 @@ class SearchService:
         if visual_vector_index.total_vectors > 0 and req.beta > 0.0:
             query_vector_visual = visual_embedder.embed_text(query_text)[0]
             cand_k_visual = min(
-                max(req.top_k * 10 if req.video_id else req.top_k * 5, 25),
+                max(req.top_k * 20 if req.video_id else req.top_k * 5, 50 if req.video_id else 25),
                 visual_vector_index.total_vectors,
             )
             raw_vis = visual_vector_index.search(query_vector_visual, top_k=cand_k_visual)
-            if req.threshold is not None and raw_vis:
-                raw_vis = [(fid, s) for fid, s in raw_vis if s >= req.threshold]
+            if raw_vis:
+                raw_vis = [(fid, s) for fid, s in raw_vis if s >= settings.RAW_VISUAL_SIMILARITY_FLOOR]
             if raw_vis:
                 candidate_ids = [frame_id for frame_id, _ in raw_vis]
                 q_vis = (
@@ -305,6 +309,8 @@ class SearchService:
                     if frame_id in frames_by_id:
                         frame = frames_by_id[frame_id]
                         v_title = frame.video.original_filename if frame.video else "Unknown Video"
+                        v_has_audio = frame.video.has_audio if frame.video else True
+                        v_status = frame.video.status if frame.video else "READY"
                         visual_matches.append(
                             VisualMatch(
                                 frame_id=frame.id,
@@ -313,6 +319,8 @@ class SearchService:
                                 timestamp=frame.timestamp,
                                 preview_url=f"/api/videos/{frame.video_id}/frames/{frame.id}",
                                 raw_score=score,
+                                has_audio=v_has_audio,
+                                video_status=v_status,
                             )
                         )
 
@@ -341,6 +349,7 @@ class SearchService:
             total_results=len(fused_results),
             results=fused_results,
             latency_ms=round(latency, 2),
+            fusion_method=req.fusion_method,
         )
 
 
